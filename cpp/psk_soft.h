@@ -15,10 +15,15 @@ class psk_soft_i : public psk_soft_base
     private:
         std::deque<std::complex<float> > samples;
         std::deque<double> energy;
+        std::deque<float>  phase;
         std::vector<double> symbolEnergy;
         size_t index;
+        double phaseSum;
         void samplesPerBaudChanged(const std::string& id);
-        bool reset;
+        void constelationSizeChanged(const std::string& id);
+
+        bool resetSamplesPerBaud;
+        bool resetNumSymbols;
 
 };
 

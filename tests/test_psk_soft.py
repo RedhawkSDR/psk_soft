@@ -8,6 +8,7 @@ import time
 from ossie.utils import sb
 from ossie.utils.sb import domainless
 import struct
+import cmath
 
 import matplotlib.pyplot
                  
@@ -51,39 +52,57 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         ossie.utils.testing.ScaComponentTestCase.tearDown(self)
 
     def testCase(self):
-        f = file('/home/bsg/qpsk.dat','r')
+        #f = file('/home/bsg/qpsk.dat','r')
+        f = file('/home/bsg/out2','r')
         s = f.read()
         data = list(struct.unpack('%sf' %(len(s)/4),s))
-        print dir(self.comp)
-        print self.comp.api() 
-        print "AAA", self.comp.samplesPerBaud
-        self.comp.samplesPerBaud=10
+
+        print "got %s data samples" %len(data)
+
+        self.comp.samplesPerBaud=8
         print self.comp.samplesPerBaud   
-        self.comp.numAvg=500    
-        out = self.main(data[:40000],100)
+        self.comp.numAvg=100   
+        out = self.main(data,100)
         print len(out)
          
-        matplotlib.pyplot.plot(out[::2], out[1::2],'o')
+        #         matplotlib.pyplot.plot(out[::2], out[1::2],'o')
+        #         matplotlib.pyplot.show()
+        
+        startSample=0
+        endSample=20
+        resampleFactor=1
+        startIndex=0
+        finalIndex=2000
+        x = out[2*startIndex:finalIndex:resampleFactor*2]
+        y = out[2*startIndex+1:finalIndex:resampleFactor*2]
+        cx = [complex(i,j) for i,j in zip(x,y)]
+        
+        matplotlib.pyplot.plot(x, y,'o')
+        matplotlib.pyplot.show()
+        fourth = [pow(z,4) for z in cx]
+        matplotlib.pyplot.plot(range(len(fourth)),[cmath.phase(z) for z in fourth] ,'o')
+        matplotlib.pyplot.show()
+        avgPhase = sum([cmath.phase(z) for z in fourth])/len(fourth)
+
+        matplotlib.pyplot.plot([z.real for z in fourth],[z.imag for z in fourth] ,'o')
         matplotlib.pyplot.show()
 
-#         startSample=0
-#         endSample=20
-#         x = range(len(data[2*startSample:2*endSample:2]))
-#         matplotlib.pyplot.plot(x, data[2*startSample:2*endSample:2],'o',x,data[2*startSample+1:2*endSample:2],'o')
-#         matplotlib.pyplot.show()
 
 #        for startIndex in xrange(10):
-        if True:
-            startIndex=0
+        if False:
+            startIndex=5
             print startIndex
-            finalIndex = 100
-            x = data[2*startIndex:finalIndex:20]
-            y = data[2*startIndex+1:finalIndex:20]
-            print x
-            print y
-            print data[:10]
-            matplotlib.pyplot.plot(data[2*startIndex:finalIndex:20], data[2*startIndex+1:finalIndex:20],'o')
+            resampleFactor = 8
+            finalIndex = 251*resampleFactor
+            x = data[2*startIndex:finalIndex:resampleFactor*2]
+            y = data[2*startIndex+1:finalIndex:resampleFactor*2]
+            #print x
+            #print y
+            #print data[:10]
+            matplotlib.pyplot.plot(x,y,'o')
             matplotlib.pyplot.show()
+            #matplotlib.pyplot.plot(xrange(len(x)),x,'o')
+            #matplotlib.pyplot.show()
 
 
     def main(self,inData, sampleRate, complexData = True):

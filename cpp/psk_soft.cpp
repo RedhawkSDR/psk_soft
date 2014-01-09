@@ -17,9 +17,13 @@ psk_soft_i::psk_soft_i(const char *uuid, const char *label) :
     psk_soft_base(uuid, label),
     symbolEnergy(samplesPerBaud,0.0),
     index(0),
-    reset(false)
+    phaseSum(0),
+    resetSamplesPerBaud(false),
+    resetNumSymbols(false)
 {
 	 setPropertyChangeListener("samplesPerBaud", this, &psk_soft_i::samplesPerBaudChanged);
+	 setPropertyChangeListener("constelationSize", this, &psk_soft_i::constelationSizeChanged);
+
 }
 
 psk_soft_i::~psk_soft_i()
@@ -164,11 +168,22 @@ int psk_soft_i::serviceFunction()
 	if (not tmp) { // No data is available
 		return NOOP;
 	}
+
+	if (tmp->SRI.mode!=1)
+	{
+		std::cout<<"CANNOT work with real data"<<std::endl;
+		return NORMAL;
+	}
+
+	//cash off local values in case user configures properties during our processing loop
+
 	size_t samplesPerSymbol = samplesPerBaud;
 	size_t numDataPts = samplesPerSymbol*numAvg;
-	if (reset)
+	size_t numSyms = constelationSize;
+
+	//user has changed our oversample factor - resize the symbolEnergy vector and repopulate it with the energy samples
+	if (resetSamplesPerBaud)
 	{
-		//going to be a bit sloppy here and introudce some bit slips since this is for display purposes only
 		symbolEnergy.assign(samplesPerSymbol,0.0);
 		if (samples.size()> numDataPts)
 		{
@@ -185,77 +200,89 @@ int psk_soft_i::serviceFunction()
 		}
 
 	}
-	if (tmp->SRI.mode!=1)
+
+	//all our phase caluclations are invalid if we change our constelation size
+	//just clear the phaseSum and the phaseVec and start with new estimates
+	if (resetNumSymbols)
 	{
-		std::cout<<"CANNOT work with real data"<<std::endl;
-		return NORMAL;
+		phaseSum=0;
+		phase.clear();
 	}
-	std::cout<<"got elements"<<tmp->dataBuffer.size()<<std::endl;
+
 	std::vector<std::complex<float> >* dataVec = (std::vector<std::complex<float> >*) &(tmp->dataBuffer);
 
-
 	std::vector<std::complex<float> > out;
+	//reserve data for the output
 	out.reserve((dataVec->size()+index)/samplesPerSymbol);
-
-	std::cout<<" samplesPerSymbol = "<<samplesPerSymbol<<", "<<"samplesPerBaud = "<<samplesPerBaud<<" numDataPts = "<<numDataPts<<std::endl;
 
 	for (std::vector<std::complex<float> >::iterator i=dataVec->begin(); i!=dataVec->end(); i++)
 	{
-		//std::cout<<"AAA index = "<<index<<", samples.size() = "<<samples.size()<<std::endl;
+		//push back the sample and its energy
 		samples.push_back(*i);
 		double sampleEnergy = norm(*i);
 		energy.push_back(sampleEnergy);
+		//add energy to the symbolEnergy vector
 		symbolEnergy[index]+=sampleEnergy;
 		index++;
-		//std::cout<<"BBB index = "<<index<<", samples.size() = "<<samples.size()<<std::endl;
+		//when we reach the end of the next symbol
 		if (index== samplesPerSymbol)
 		{
+			//if we have enough samples to get meaningful averages we start outputing data
 			if (samples.size()==numDataPts)
 			{
 				//get the index from the end for the max symbolEnergy
 				size_t sampleIndex = std::distance(symbolEnergy.begin(), std::max_element(symbolEnergy.begin(),symbolEnergy.end()));
-				std::cout<<"sampleIndex = "<<sampleIndex<<std::endl;
-				//size_t sampleIndex=0;
-				//for (int k=0; k!=samples.size(); k++)
-				//	std::cout<<samples[k]<<", ";
-				//std::cout<<std::endl;
 
-				//add the output sample to the vector
-				out.push_back(*(samples.begin()+sampleIndex));
+				//this is the sample we need to output
+				std::deque<std::complex<float> >::iterator sample= samples.begin()+sampleIndex;
 
+				//algorthim to compensate for phase offset
+				double thisPhase = arg(pow(*sample,numSyms));
+
+				//do phase unwrapping here with previous phase estimates
+				if (!phase.empty())
+				{
+					while (phase.back()-thisPhase > M_PI)
+					{
+						thisPhase+=2*M_PI;
+					}
+					while (thisPhase-phase.back() > M_PI)
+					{
+						thisPhase-=2*M_PI;
+					}
+				}
+				//compute the average phase
+				phaseSum+=thisPhase;
+				phase.push_back(thisPhase);
+				float avgPhase = phaseSum/phase.size();
+				//compute the phase offset - we add PI/4 so that we get samples at (+/- 1, +/-j) instead of 0,1,-1,,-j
+				std::complex<float> phaseCorrection= std::polar(float(1.0),float(-avgPhase/numSyms+M_PI_4));
+				out.push_back(*sample*phaseCorrection);
+
+				//typically this while loop run once unless user updates phaseAvg property
+				while ( phase.size()>=phaseAvg)
+				{
+					phaseSum-=phase.front();
+					phase.pop_front();
+				}
 				//subtract the energy for this symbol from the symbolEnergy vector
 				std::vector<double>::iterator symIter = symbolEnergy.begin();
 				std::deque<double>::iterator energyIterEnd = energy.begin()+samplesPerSymbol;
-				for (std::deque<double>::iterator energyIter = energy.begin(); energyIter !=energyIterEnd;energyIter++)
+				for (std::deque<double>::iterator energyIter = energy.begin(); energyIter !=energyIterEnd;energyIter++, symIter++)
 				{
 					*symIter-=*energyIter;
-					symIter++;
 				}
-				//remove all samples from this symbol from the samples & energy deques
+				//remove all samples from this symbol from the samples & energy containers
 				energy.erase(energy.begin(), energyIterEnd);
 				samples.erase(samples.begin(), samples.begin()+samplesPerSymbol);
 			}
-			index=0; //reset our symbolIndex back to 0
+			//reset our symbolIndex back to 0
+			index=0;
 		}
-		//std::cout<<"ZZZZZZZ index = "<<index<<", samples.size() = "<<samples.size()<<std::endl;
 	}
-	std::cout<<"AAAAA = "<<out.size()<<std::endl;
-
 	// NOTE: You must make at least one valid pushSRI call
 	if (tmp->sriChanged) {
 		dataFloat_out->pushSRI(tmp->SRI);
-	}
-	std::cout<<"out.size() = "<<out.size()<<std::endl;
-	float phase=0;
-	for (std::vector<std::complex<float> >::iterator i = out.begin(); i!=out.end(); i++)
-	{
-		phase += arg(pow((*i),4));
-	}
-	float phaseAvg = float(phase)/float(out.size());
-	std::complex<float> phasor = std::polar(float(1.0),-phaseAvg+float(M_PI_4));
-	for (std::vector<std::complex<float> >::iterator i = out.begin(); i!=out.end(); i++)
-	{
-		*i=(*i)*phasor;
 	}
 
 	if (!out.empty())
@@ -269,5 +296,10 @@ int psk_soft_i::serviceFunction()
 
 void psk_soft_i::samplesPerBaudChanged(const std::string& id){
    std::cout << "samplesPerBaudChanged " << samplesPerBaud<< std::endl;
-   reset=(samplesPerBaud!=symbolEnergy.size());
+   resetSamplesPerBaud=(samplesPerBaud!=symbolEnergy.size());
+}
+
+void psk_soft_i::constelationSizeChanged(const std::string& id){
+   std::cout << "numSymbolsChanged " << samplesPerBaud<< std::endl;
+   resetNumSymbols=true;
 }

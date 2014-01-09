@@ -2,10 +2,27 @@
 <!DOCTYPE properties PUBLIC "-//JTRS//DTD SCA V2.2.2 PRF//EN" "properties.dtd">
 <properties>
   <simple id="samplesPerBaud" mode="readwrite" type="ushort">
+    <description>How much we are oversampling our data</description>
+    <value>10</value>
     <kind kindtype="configure"/>
     <action type="external"/>
   </simple>
   <simple id="numAvg" mode="readwrite" type="ulong">
+    <description>Number of symbols to average to determine sample Index</description>
+    <value>100</value>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
+  <simple id="constelationSize" mode="readwrite" type="ushort">
+    <description>number of points in the constelation 
+(2 for bpsk, 4 for qpsk, etc).</description>
+    <value>4</value>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
+  <simple id="phaseAvg" mode="readwrite" type="ushort">
+    <description>Number of points used to determine the phase offset</description>
+    <value>50</value>
     <kind kindtype="configure"/>
     <action type="external"/>
   </simple>

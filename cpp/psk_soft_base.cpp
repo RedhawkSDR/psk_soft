@@ -115,6 +115,7 @@ void psk_soft_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle
 void psk_soft_base::loadProperties()
 {
     addProperty(samplesPerBaud,
+                10,
                 "samplesPerBaud",
                 "",
                 "readwrite",
@@ -123,7 +124,26 @@ void psk_soft_base::loadProperties()
                 "configure");
 
     addProperty(numAvg,
+                100,
                 "numAvg",
+                "",
+                "readwrite",
+                "",
+                "external",
+                "configure");
+
+    addProperty(constelationSize,
+                4,
+                "constelationSize",
+                "",
+                "readwrite",
+                "",
+                "external",
+                "configure");
+
+    addProperty(phaseAvg,
+                50,
+                "phaseAvg",
                 "",
                 "readwrite",
                 "",

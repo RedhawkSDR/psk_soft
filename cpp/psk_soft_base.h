@@ -104,6 +104,8 @@ class psk_soft_base : public Resource_impl
         // Member variables exposed as properties
         unsigned short samplesPerBaud;
         CORBA::ULong numAvg;
+        unsigned short constelationSize;
+        unsigned short phaseAvg;
 
         // Ports
         bulkio::InFloatPort *dataFloat_in;
