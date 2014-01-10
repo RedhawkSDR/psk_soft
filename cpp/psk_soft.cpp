@@ -256,8 +256,11 @@ int psk_soft_i::serviceFunction()
 				phase.push_back(thisPhase);
 				float avgPhase = phaseSum/phase.size();
 				//compute the phase offset - we add PI/4 so that we get samples at (+/- 1, +/-j) instead of 0,1,-1,,-j
-				std::complex<float> phaseCorrection= std::polar(float(1.0),float(-avgPhase/numSyms+M_PI_4));
-				out.push_back(*sample*phaseCorrection);
+				float phaseCorrection = -avgPhase/numSyms;
+				if (numSyms==4)
+					phaseCorrection+=M_PI_4;
+				std::complex<float> phaseCorrectionPhasor= std::polar(float(1.0),phaseCorrection);
+				out.push_back(*sample*phaseCorrectionPhasor);
 
 				//typically this while loop run once unless user updates phaseAvg property
 				while ( phase.size()>=phaseAvg)
