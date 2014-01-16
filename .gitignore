@@ -1,0 +1,8 @@
+cpp/.deps
+cpp/Makefile
+cpp/autom4te.cache
+cpp/config.log
+cpp/config.status
+cpp/*.o
+cpp/psk_soft
+
