@@ -12,6 +12,19 @@ import cmath
 
 import matplotlib.pyplot
                  
+def toClipboard(data):
+    import pygtk
+    pygtk.require('2.0')
+    import gtk
+
+    # get the clipboard
+    clipboard = gtk.clipboard_get()
+    txt = str(data)
+    clipboard.set_text(txt)
+
+    # make our data available to other applications
+    clipboard.store()
+
 
 def toCx(input):
     output =[]
@@ -27,18 +40,23 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         """
         ossie.utils.testing.ScaComponentTestCase.setUp(self)
         self.src = sb.DataSource()
-        self.sink = sb.DataSink()
+        self.soft = sb.DataSink()
+        self.bits = sb.DataSink()
+        self.phase = sb.DataSink()
         
         #setup my components
         self.setupComponent()
         
         self.comp.start()
         self.src.start()
-        self.sink.start()
+        self.soft.start()
+        self.bits.start()
         
         #do the connections
         self.src.connect(self.comp)        
-        self.comp.connect(self.sink)
+        self.comp.connect(self.soft,usesPortName='dataFloat_out')
+        self.comp.connect(self.bits,usesPortName='dataShort_out')
+        self.comp.connect(self.phase,usesPortName='phase_out')
         
     def tearDown(self):
         """Finish the unit test - this is run after every method that starts with test
@@ -47,7 +65,9 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         #######################################################################
         # Simulate regular component shutdown
         self.src.stop()
-        self.sink.stop()      
+        self.soft.stop()
+        self.bits.stop()
+        self.phase.stop()            
         self.comp.releaseObject()
         ossie.utils.testing.ScaComponentTestCase.tearDown(self)
 
@@ -62,30 +82,99 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         self.comp.samplesPerBaud=8
         print self.comp.samplesPerBaud   
         self.comp.numAvg=100   
-        out = self.main(data,100)
+        out = self.main(data,100)[0]
         print len(out)
          
         #         matplotlib.pyplot.plot(out[::2], out[1::2],'o')
         #         matplotlib.pyplot.show()
         
-        startSample=0
-        endSample=20
-        resampleFactor=1
-        startIndex=0
-        finalIndex=2000
-        x = out[2*startIndex:finalIndex:resampleFactor*2]
-        y = out[2*startIndex+1:finalIndex:resampleFactor*2]
-        cx = [complex(i,j) for i,j in zip(x,y)]
-        
-        matplotlib.pyplot.plot(x, y,'o')
-        matplotlib.pyplot.show()
-        fourth = [pow(z,4) for z in cx]
-        matplotlib.pyplot.plot(range(len(fourth)),[cmath.phase(z) for z in fourth] ,'o')
-        matplotlib.pyplot.show()
-        avgPhase = sum([cmath.phase(z) for z in fourth])/len(fourth)
+        if out:
+            startSample=0
+            endSample=20
+            resampleFactor=1
+            startIndex=0
+            finalIndex=2000
+            x = out[2*startIndex:finalIndex:resampleFactor*2]
+            y = out[2*startIndex+1:finalIndex:resampleFactor*2]
+            cx = [complex(i,j) for i,j in zip(x,y)]
+            
+            matplotlib.pyplot.plot(x, y,'o')
+            matplotlib.pyplot.show()
+            fourth = [pow(z,4) for z in cx]
+            matplotlib.pyplot.plot(range(len(fourth)),[cmath.phase(z) for z in fourth] ,'o')
+            matplotlib.pyplot.show()
+            avgPhase = sum([cmath.phase(z) for z in fourth])/len(fourth)
+    
+            matplotlib.pyplot.plot([z.real for z in fourth],[z.imag for z in fourth] ,'o')
+            matplotlib.pyplot.show()
 
-        matplotlib.pyplot.plot([z.real for z in fourth],[z.imag for z in fourth] ,'o')
-        matplotlib.pyplot.show()
+
+#        for startIndex in xrange(10):
+        if False:
+            startIndex=5
+            print startIndex
+            resampleFactor = 8
+            finalIndex = 251*resampleFactor
+            x = data[2*startIndex:finalIndex:resampleFactor*2]
+            y = data[2*startIndex+1:finalIndex:resampleFactor*2]
+            #print x
+            #print y
+            #print data[:10]
+            matplotlib.pyplot.plot(x,y,'o')
+            matplotlib.pyplot.show()
+            #matplotlib.pyplot.plot(xrange(len(x)),x,'o')
+            #matplotlib.pyplot.show()
+
+    def test2Case(self):
+        #f = file('/home/bsg/qpsk.dat','r')
+        f = file('/home/bsg/psk8.dat','r')
+        s = f.read(100000)
+        data = list(struct.unpack('%sf' %(len(s)/4),s))
+
+        print "got %s data samples" %len(data)
+        
+        theta = .002
+        #introduce a small frequency offset
+        cxData = toCx(data)
+        shiftedData = [x*cmath.rect(1,i*theta) for x, i in zip(cxData,xrange(len(cxData)))]
+        data  = []
+        for x in shiftedData:
+            data.append(x.real)
+            data.append(x.imag)
+
+        self.comp.samplesPerBaud=8
+        self.comp.constelationSize=8
+        self.comp.phaseAvg = 70
+        print self.comp.samplesPerBaud, self.comp.samplesPerBaud   
+        self.comp.numAvg=100   
+        out, bits, phase = self.main(data,100)
+        print "out = ", len(out)
+        if out:
+            toClipboard(bits)
+            print len(out), len(bits)
+             
+            #         matplotlib.pyplot.plot(out[::2], out[1::2],'o')
+            #         matplotlib.pyplot.show()
+            
+            startSample=0
+            endSample=20
+            resampleFactor=1
+            startIndex=0
+            finalIndex=2000
+            x = out[2*startIndex:finalIndex:resampleFactor*2]
+            y = out[2*startIndex+1:finalIndex:resampleFactor*2]
+            cx = [complex(i,j) for i,j in zip(x,y)]
+            
+            matplotlib.pyplot.plot(x, y,'o')
+            matplotlib.pyplot.show()
+            power = [pow(z,8) for z in cx]
+            
+            matplotlib.pyplot.plot(range(len(phase)), phase)
+            matplotlib.pyplot.show()
+            
+            matplotlib.pyplot.plot(range(len(power)),[cmath.phase(z) for z in power] ,'o')
+            matplotlib.pyplot.show()
+            avgPhase = sum([cmath.phase(z) for z in power])/len(power)
 
 
 #        for startIndex in xrange(10):
@@ -105,6 +194,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             #matplotlib.pyplot.show()
 
 
+
     def main(self,inData, sampleRate, complexData = True):
         """The main engine for all the test cases - configure the equation, push data, and get output
            As applicable
@@ -115,16 +205,25 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
                       complexData = complexData, 
                       sampleRate=sampleRate)
         out=[]
+        bits=[]
+        phase=[]
         while True:
-            newOut = self.sink.getData()
-            if newOut:
-                out.extend(newOut)
+            newOut = self.soft.getData()
+            newBits = self.bits.getData()
+            newPhase = self.phase.getData()
+            if newOut or newBits:
+                if newOut:
+                    out.extend(newOut)
+                if newBits:
+                    bits.extend(newBits)
+                if newPhase:
+                    phase.extend(newPhase)
                 count=0
             elif count==100:
                 break
             time.sleep(.01)
             count+=1
-        return out
+        return out, bits, phase
 
     def setupComponent(self):
         #######################################################################

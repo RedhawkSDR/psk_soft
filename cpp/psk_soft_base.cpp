@@ -28,9 +28,15 @@ void psk_soft_base::construct()
     oid = ossie::corba::RootPOA()->activate_object(dataFloat_in);
     dataFloat_out = new bulkio::OutFloatPort("dataFloat_out");
     oid = ossie::corba::RootPOA()->activate_object(dataFloat_out);
+    dataShort_out = new bulkio::OutShortPort("dataShort_out");
+    oid = ossie::corba::RootPOA()->activate_object(dataShort_out);
+    phase_out = new bulkio::OutFloatPort("phase_out");
+    oid = ossie::corba::RootPOA()->activate_object(phase_out);
 
     registerInPort(dataFloat_in);
     registerOutPort(dataFloat_out, dataFloat_out->_this());
+    registerOutPort(dataShort_out, dataShort_out->_this());
+    registerOutPort(phase_out, phase_out->_this());
 }
 
 /*******************************************************************************************
@@ -108,6 +114,8 @@ void psk_soft_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle
 
     delete(dataFloat_in);
     delete(dataFloat_out);
+    delete(dataShort_out);
+    delete(phase_out);
 
     Resource_impl::releaseObject();
 }

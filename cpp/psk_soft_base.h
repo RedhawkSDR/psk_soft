@@ -110,6 +110,8 @@ class psk_soft_base : public Resource_impl
         // Ports
         bulkio::InFloatPort *dataFloat_in;
         bulkio::OutFloatPort *dataFloat_out;
+        bulkio::OutShortPort *dataShort_out;
+        bulkio::OutFloatPort *phase_out;
 
     private:
         void construct();

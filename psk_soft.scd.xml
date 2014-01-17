@@ -17,6 +17,10 @@
       <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="dataFloat_out">
         <porttype type="data"/>
       </uses>
+      <uses repid="IDL:BULKIO/dataShort:1.0" usesname="dataShort_out">
+        <porttype type="data"/>
+      </uses>
+      <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="phase_out"/>
     </ports>
   </componentfeatures>
   <interfaces>
@@ -33,6 +37,10 @@
     <interface name="ProvidesPortStatisticsProvider" repid="IDL:BULKIO/ProvidesPortStatisticsProvider:1.0"/>
     <interface name="updateSRI" repid="IDL:BULKIO/updateSRI:1.0"/>
     <interface name="dataFloat" repid="IDL:BULKIO/dataFloat:1.0">
+      <inheritsinterface repid="IDL:BULKIO/ProvidesPortStatisticsProvider:1.0"/>
+      <inheritsinterface repid="IDL:BULKIO/updateSRI:1.0"/>
+    </interface>
+    <interface name="dataShort" repid="IDL:BULKIO/dataShort:1.0">
       <inheritsinterface repid="IDL:BULKIO/ProvidesPortStatisticsProvider:1.0"/>
       <inheritsinterface repid="IDL:BULKIO/updateSRI:1.0"/>
     </interface>
