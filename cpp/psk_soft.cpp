@@ -59,7 +59,7 @@ float LinearFit::next(float yval)
 	return calculateFit();
 }
 
-void LinearFit::reset(size_t* numPts, float* sampleRate, bool forceHistoryClear)
+float LinearFit::reset(size_t* numPts, float* sampleRate, bool forceHistoryClear)
 {
 	if (sampleRate!=NULL)
 	{
@@ -91,9 +91,19 @@ void LinearFit::reset(size_t* numPts, float* sampleRate, bool forceHistoryClear)
 		xySum+=j*xdelta*(*i);
 	}
 	calculateDenominator();
-    calculateFit();
+    return calculateFit();
 
 }
+
+float LinearFit::subtractConst(float yval)
+{
+	for (std::deque<float>::iterator i =yvals.begin(); i!=yvals.end(); i++)
+	{
+		*i-=yval;
+	}
+	return reset();
+}
+
 float LinearFit::calculateFit()
 {
 	// The General best fit for a linear fit (to minimize avg error is as follows:
@@ -408,16 +418,12 @@ int psk_soft_i::serviceFunction()
 
 				//algorthim to compensate for phase offset
 				double thisPhase = arg(pow(*sample,numSyms));
+//				std::cout<<"thisPhase = "<<thisPhase<<std::endl;
 
 				//do phase unwrapping here with previous phase estimates
-				while (phaseEstimate-thisPhase > M_PI)
-				{
-					thisPhase+=2*M_PI;
-				}
-				while (thisPhase - phaseEstimate > M_PI)
-				{
-					thisPhase-=2*M_PI;
-				}
+				long numWraps = round((phaseEstimate-thisPhase)/M_2PI);
+				thisPhase += +numWraps*M_2PI;
+
 				//compute the average phase
 				phaseEstimate = phaseEstimator.next(thisPhase);
 				phase_vec.push_back(phaseEstimate);
@@ -484,6 +490,20 @@ int psk_soft_i::serviceFunction()
 			index=0;
 		}
 	}
+	//wrap phase estimate back to a reasonable value to keep it from going to infinitie
+	//we wrap about numSyms*2pi and NOT 2PI or we introduce phase offsets
+	//since phaseEstimate is the estiamte of the numSyms power of the phase
+	float wrapValue = M_2PI*numSyms;
+	if (abs(phaseEstimate)> wrapValue)
+	{
+		long numWraps = round(phaseEstimate/wrapValue);
+		//we subtract the phaseOffset from the estiamtor.  This takes care of doing it for all the history
+		//and reseting the state
+		float newPhaseEstimate = phaseEstimator.subtractConst(numWraps*wrapValue);
+		//assert(abs((phaseEstimate-numWraps*M_2PI)-out)<.01);
+		phaseEstimate = newPhaseEstimate;
+	}
+
 	if (!out.empty())
 	{
 		std::vector<float>* output = (std::vector<float>*)&out;

@@ -16,7 +16,8 @@ class LinearFit
 public:
 	LinearFit(size_t numPts, float sampleRate);
 	float next(float yval);
-	void reset(size_t* numPts=NULL, float* sampleRate=NULL, bool forceHistoryClear=false);
+	float reset(size_t* numPts=NULL, float* sampleRate=NULL, bool forceHistoryClear=false);
+	float subtractConst(float yval);
 private:
 	//here are the two equations which do the best fit
 	float calculateFit();
@@ -42,6 +43,7 @@ class psk_soft_i : public psk_soft_base
         ~psk_soft_i();
         int serviceFunction();
     private:
+        static const double M_2PI = 2*M_PI;
         std::deque<std::complex<float> > samples;
         std::deque<double> energy;
         std::vector<double> symbolEnergy;
