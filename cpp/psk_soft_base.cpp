@@ -12,91 +12,48 @@
 
 psk_soft_base::psk_soft_base(const char *uuid, const char *label) :
     Resource_impl(uuid, label),
-    serviceThread(0)
+    ThreadedComponent()
 {
-    construct();
+    loadProperties();
+
+    dataFloat_in = new bulkio::InFloatPort("dataFloat_in");
+    addPort("dataFloat_in", dataFloat_in);
+    dataFloat_out = new bulkio::OutFloatPort("dataFloat_out");
+    addPort("dataFloat_out", dataFloat_out);
+    dataShort_out = new bulkio::OutShortPort("dataShort_out");
+    addPort("dataShort_out", dataShort_out);
+    phase_out = new bulkio::OutFloatPort("phase_out");
+    addPort("phase_out", phase_out);
 }
 
-void psk_soft_base::construct()
+psk_soft_base::~psk_soft_base()
 {
-    Resource_impl::_started = false;
-    loadProperties();
-    serviceThread = 0;
-    
-    PortableServer::ObjectId_var oid;
-    dataFloat_in = new bulkio::InFloatPort("dataFloat_in");
-    oid = ossie::corba::RootPOA()->activate_object(dataFloat_in);
-    dataFloat_out = new bulkio::OutFloatPort("dataFloat_out");
-    oid = ossie::corba::RootPOA()->activate_object(dataFloat_out);
-    dataShort_out = new bulkio::OutShortPort("dataShort_out");
-    oid = ossie::corba::RootPOA()->activate_object(dataShort_out);
-    phase_out = new bulkio::OutFloatPort("phase_out");
-    oid = ossie::corba::RootPOA()->activate_object(phase_out);
-
-    registerInPort(dataFloat_in);
-    registerOutPort(dataFloat_out, dataFloat_out->_this());
-    registerOutPort(dataShort_out, dataShort_out->_this());
-    registerOutPort(phase_out, phase_out->_this());
+    delete dataFloat_in;
+    dataFloat_in = 0;
+    delete dataFloat_out;
+    dataFloat_out = 0;
+    delete dataShort_out;
+    dataShort_out = 0;
+    delete phase_out;
+    phase_out = 0;
 }
 
 /*******************************************************************************************
     Framework-level functions
     These functions are generally called by the framework to perform housekeeping.
 *******************************************************************************************/
-void psk_soft_base::initialize() throw (CF::LifeCycle::InitializeError, CORBA::SystemException)
-{
-}
-
 void psk_soft_base::start() throw (CORBA::SystemException, CF::Resource::StartError)
 {
-    boost::mutex::scoped_lock lock(serviceThreadLock);
-    if (serviceThread == 0) {
-        dataFloat_in->unblock();
-        serviceThread = new ProcessThread<psk_soft_base>(this, 0.1);
-        serviceThread->start();
-    }
-    
-    if (!Resource_impl::started()) {
-    	Resource_impl::start();
-    }
+    Resource_impl::start();
+    ThreadedComponent::startThread();
 }
 
 void psk_soft_base::stop() throw (CORBA::SystemException, CF::Resource::StopError)
 {
-    boost::mutex::scoped_lock lock(serviceThreadLock);
-    // release the child thread (if it exists)
-    if (serviceThread != 0) {
-        dataFloat_in->block();
-        if (!serviceThread->release(2)) {
-            throw CF::Resource::StopError(CF::CF_NOTSET, "Processing thread did not die");
-        }
-        serviceThread = 0;
+    Resource_impl::stop();
+    if (!ThreadedComponent::stopThread()) {
+        throw CF::Resource::StopError(CF::CF_NOTSET, "Processing thread did not die");
     }
-    
-    if (Resource_impl::started()) {
-    	Resource_impl::stop();
-    }
-}
-
-CORBA::Object_ptr psk_soft_base::getPort(const char* _id) throw (CORBA::SystemException, CF::PortSupplier::UnknownPort)
-{
-
-    std::map<std::string, Port_Provides_base_impl *>::iterator p_in = inPorts.find(std::string(_id));
-    if (p_in != inPorts.end()) {
-        if (!strcmp(_id,"dataFloat_in")) {
-            bulkio::InFloatPort *ptr = dynamic_cast<bulkio::InFloatPort *>(p_in->second);
-            if (ptr) {
-                return ptr->_this();
-            }
-        }
-    }
-
-    std::map<std::string, CF::Port_var>::iterator p_out = outPorts_var.find(std::string(_id));
-    if (p_out != outPorts_var.end()) {
-        return CF::Port::_duplicate(p_out->second);
-    }
-
-    throw (CF::PortSupplier::UnknownPort());
 }
 
 void psk_soft_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle::ReleaseError)
@@ -107,15 +64,6 @@ void psk_soft_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle
     } catch (CF::Resource::StopError& ex) {
         // TODO - this should probably be logged instead of ignored
     }
-
-    // deactivate ports
-    releaseInPorts();
-    releaseOutPorts();
-
-    delete(dataFloat_in);
-    delete(dataFloat_out);
-    delete(dataShort_out);
-    delete(phase_out);
 
     Resource_impl::releaseObject();
 }
@@ -159,3 +107,5 @@ void psk_soft_base::loadProperties()
                 "configure");
 
 }
+
+
