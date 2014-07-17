@@ -395,29 +395,38 @@ int psk_soft_i::serviceFunction()
 	phase_vec.reserve(out.size());
 	bits.reserve(out.size()*bitsPerBaud);
 
+	std::complex<float> sample;
+	const size_t lastSample = samplesPerSymbol-1;
 	for (std::vector<std::complex<float> >::iterator i=dataVec->begin(); i!=dataVec->end(); i++)
 	{
 		//push back the sample and its energy
-		samples.push_back(*i);
-		double sampleEnergy = norm(*i);
-		energy.push_back(sampleEnergy);
-		//add energy to the symbolEnergy vector
-		symbolEnergy[index]+=sampleEnergy;
-		index++;
+		if (samplesPerSymbol >1)
+		{
+			samples.push_back(*i);
+			double sampleEnergy = norm(*i);
+			energy.push_back(sampleEnergy);
+			//add energy to the symbolEnergy vector
+			symbolEnergy[index]+=sampleEnergy;
+		}
 		//when we reach the end of the next symbol
-		if (index== samplesPerSymbol)
+		if (index== lastSample)
 		{
 			//if we have enough samples to get meaningful averages we start outputing data
 			if (samples.size()==numDataPts)
 			{
-				//get the index from the end for the max symbolEnergy
-				size_t sampleIndex = std::distance(symbolEnergy.begin(), std::max_element(symbolEnergy.begin(),symbolEnergy.end()));
+				if (samplesPerSymbol>1)
+				{
+					//get the index from the end for the max symbolEnergy
+					size_t sampleIndex = std::distance(symbolEnergy.begin(), std::max_element(symbolEnergy.begin(),symbolEnergy.end()));
 
-				//this is the sample we need to output
-				std::deque<std::complex<float> >::iterator sample= samples.begin()+sampleIndex;
+					//this is the sample we need to output
+					sample= *(samples.begin()+sampleIndex);
+				}
+				else
+					sample = *i;
 
 				//algorthim to compensate for phase offset
-				double thisPhase = arg(pow(*sample,numSyms));
+				double thisPhase = arg(pow(sample,numSyms));
 //				std::cout<<"thisPhase = "<<thisPhase<<std::endl;
 
 				//do phase unwrapping here with previous phase estimates
@@ -432,7 +441,7 @@ int psk_soft_i::serviceFunction()
 				if (numSyms==4)
 					phaseCorrection+=M_PI_4;
 				std::complex<float> phaseCorrectionPhasor= std::polar(float(1.0),phaseCorrection);
-				out.push_back(*sample*phaseCorrectionPhasor);
+				out.push_back(sample*phaseCorrectionPhasor);
 
 				//do conversion to bits
 				if (bitsPerBaud==1)
@@ -474,21 +483,26 @@ int psk_soft_i::serviceFunction()
 				else
 					std::cout<<"numSyms "<<numSyms<< " not supported - no bits out"<<std::endl;
 
-
-				//subtract the energy for this symbol from the symbolEnergy vector
-				std::vector<double>::iterator symIter = symbolEnergy.begin();
-				std::deque<double>::iterator energyIterEnd = energy.begin()+samplesPerSymbol;
-				for (std::deque<double>::iterator energyIter = energy.begin(); energyIter !=energyIterEnd;energyIter++, symIter++)
+				if (samplesPerSymbol>1)
 				{
-					*symIter-=*energyIter;
+
+					//subtract the energy for this symbol from the symbolEnergy vector
+					std::vector<double>::iterator symIter = symbolEnergy.begin();
+					std::deque<double>::iterator energyIterEnd = energy.begin()+samplesPerSymbol;
+					for (std::deque<double>::iterator energyIter = energy.begin(); energyIter !=energyIterEnd;energyIter++, symIter++)
+					{
+						*symIter-=*energyIter;
+					}
+					//remove all samples from this symbol from the samples & energy containers
+					energy.erase(energy.begin(), energyIterEnd);
+					samples.erase(samples.begin(), samples.begin()+samplesPerSymbol);
 				}
-				//remove all samples from this symbol from the samples & energy containers
-				energy.erase(energy.begin(), energyIterEnd);
-				samples.erase(samples.begin(), samples.begin()+samplesPerSymbol);
 			}
 			//reset our symbolIndex back to 0
 			index=0;
 		}
+		else
+			index++;
 	}
 	//wrap phase estimate back to a reasonable value to keep it from going to infinitie
 	//we wrap about numSyms*2pi and NOT 2PI or we introduce phase offsets
