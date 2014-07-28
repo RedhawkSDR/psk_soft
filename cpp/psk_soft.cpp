@@ -441,7 +441,25 @@ int psk_soft_i::serviceFunction()
 				if (numSyms==4)
 					phaseCorrection+=M_PI_4;
 				std::complex<float> phaseCorrectionPhasor= std::polar(float(1.0),phaseCorrection);
-				out.push_back(sample*phaseCorrectionPhasor);
+				std::complex<float> corrected(sample*phaseCorrectionPhasor);
+				if (differentialDecoding)
+				{
+					//normal case
+					if (abs(corrected) > 1e-16)
+					{
+						out.push_back(corrected/last);
+						last = corrected;
+					}
+					else
+					{
+						//if the value is to small the division will produce wierd results - just punt and give up the last one
+						//this should rarely (if ever) happen
+						std::cout<<"magniutude of soft sample is too small for valid phase estimate "<< abs(corrected)<<std::endl;
+						out.push_back(last); //this is just a punt here
+					}
+				}
+				else
+					out.push_back(corrected);
 
 				//do conversion to bits
 				if (bitsPerBaud==1)

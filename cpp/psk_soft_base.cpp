@@ -106,6 +106,15 @@ void psk_soft_base::loadProperties()
                 "external",
                 "configure");
 
+    addProperty(differentialDecoding,
+                false,
+                "differentialDecoding",
+                "",
+                "readwrite",
+                "",
+                "external",
+                "configure");
+
 }
 
 

@@ -27,6 +27,7 @@ class psk_soft_base : public Resource_impl, protected ThreadedComponent
         CORBA::ULong numAvg;
         unsigned short constelationSize;
         unsigned short phaseAvg;
+        bool differentialDecoding;
 
         // Ports
         bulkio::InFloatPort *dataFloat_in;

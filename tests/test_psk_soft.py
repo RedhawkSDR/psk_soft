@@ -8,6 +8,8 @@ import time
 from ossie.utils import sb
 from ossie.utils.sb import domainless
 import struct
+import math
+import random
 import cmath
 
 import matplotlib.pyplot
@@ -31,6 +33,37 @@ def toCx(input):
     for i in xrange(len(input)/2):
         output.append(complex(input[2*i], input[2*i+1]))
     return output 
+
+def toReal(dataCx):
+    output=[]
+    for val in dataCx:
+        output.append(val.real)
+        output.append(val.imag)
+    return output
+                      
+
+def genPsk(numPts, sampPerBaud=8,numSyms=4,differential=False):
+    numSymbols = numPts/sampPerBaud
+    syms = range(numSyms)
+    phase = [2*math.pi*x/numSyms for x in syms]
+    cx = [complex(math.cos(x),math.sin(x)) for x in phase]
+    out=[]
+    inputSymbols=[]
+    last=1
+    for i in xrange(numSymbols):
+        x = random.choice(syms)
+        x_cx = cx[x]
+        inputSymbols.append(x_cx)
+        if differential:
+            val = x_cx*last
+            last = val
+            print x, x_cx, val
+        else:
+            val = x_cx
+
+        for j in xrange(sampPerBaud):
+              out.append(val + .0001*random.random()) #add a little noise in make the plot happy 
+    return out, inputSymbols
 
 class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
     """Test for all component implementations in psk_soft"""
@@ -124,6 +157,19 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             matplotlib.pyplot.show()
             #matplotlib.pyplot.plot(xrange(len(x)),x,'o')
             #matplotlib.pyplot.show()
+
+    def testDiffDecode(self):
+        data, syms = genPsk(1000, sampPerBaud=8,numSyms=4,differential=True)
+        dataReal=[]
+        
+        self.comp.samplesPerBaud=8
+        self.comp.constelationSize=4
+        self.comp.numAvg=100
+        self.comp.differentialDecoding=True
+        dataReal = toReal(data)
+        out, bits, phase = self.main(dataReal,100)
+        print len(out), len(syms)
+        
 
     def test2Case(self):
         #f = file('/home/bsg/qpsk.dat','r')

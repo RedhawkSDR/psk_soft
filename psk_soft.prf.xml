@@ -26,4 +26,9 @@
     <kind kindtype="configure"/>
     <action type="external"/>
   </simple>
+  <simple id="differentialDecoding" mode="readwrite" type="boolean">
+    <value>False</value>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
 </properties>

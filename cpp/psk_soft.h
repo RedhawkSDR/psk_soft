@@ -48,6 +48,7 @@ class psk_soft_i : public psk_soft_base
         std::deque<double> energy;
         std::vector<double> symbolEnergy;
         size_t index;
+        std::complex<float> last;
         void samplesPerBaudChanged(const std::string& id);
         void constelationSizeChanged(const std::string& id);
         void phaseAvgChanged(const std::string& id);
