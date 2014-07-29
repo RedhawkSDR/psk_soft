@@ -426,6 +426,8 @@ int psk_soft_i::serviceFunction()
 					sample = *i;
 
 				//algorthim to compensate for phase offset
+				//note this isn't needed for differential decoding
+				//but since we have phase as a debug float out we do the calculations regardless
 				double thisPhase = arg(pow(sample,numSyms));
 //				std::cout<<"thisPhase = "<<thisPhase<<std::endl;
 
@@ -436,31 +438,25 @@ int psk_soft_i::serviceFunction()
 				//compute the average phase
 				phaseEstimate = phaseEstimator.next(thisPhase);
 				phase_vec.push_back(phaseEstimate);
+
+				float phaseCorrection=0;
+
+				if (differentialDecoding)
+				{
+					std::complex<float> decoded = sample/last;
+					last = sample;
+					sample = decoded;
+				}
+				else
+				{
+					phaseCorrection = -phaseEstimate/numSyms;
+				}
 				//compute the phase offset - we add PI/4 so that we get samples at (+/- 1, +/-j) instead of 0,1,-1,,-j
-				float phaseCorrection = -phaseEstimate/numSyms;
 				if (numSyms==4)
 					phaseCorrection+=M_PI_4;
 				std::complex<float> phaseCorrectionPhasor= std::polar(float(1.0),phaseCorrection);
 				std::complex<float> corrected(sample*phaseCorrectionPhasor);
-				if (differentialDecoding)
-				{
-					//normal case
-					if (abs(corrected) > 1e-16)
-					{
-						out.push_back(corrected/last);
-						last = corrected;
-					}
-					else
-					{
-						//if the value is to small the division will produce wierd results - just punt and give up the last one
-						//this should rarely (if ever) happen
-						std::cout<<"magniutude of soft sample is too small for valid phase estimate "<< abs(corrected)<<std::endl;
-						out.push_back(last); //this is just a punt here
-					}
-				}
-				else
-					out.push_back(corrected);
-
+				out.push_back(corrected);
 				//do conversion to bits
 				if (bitsPerBaud==1)
 				{

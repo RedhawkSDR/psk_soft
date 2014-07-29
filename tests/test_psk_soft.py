@@ -40,10 +40,11 @@ def toReal(dataCx):
         output.append(val.real)
         output.append(val.imag)
     return output
-                      
 
-def genPsk(numPts, sampPerBaud=8,numSyms=4,differential=False):
-    numSymbols = numPts/sampPerBaud
+def roundCx(val):
+    return complex(round(val.real), round(val.imag))                      
+
+def genPsk(numSymbols, sampPerBaud=8,numSyms=4,differential=False):
     syms = range(numSyms)
     phase = [2*math.pi*x/numSyms for x in syms]
     cx = [complex(math.cos(x),math.sin(x)) for x in phase]
@@ -57,7 +58,6 @@ def genPsk(numPts, sampPerBaud=8,numSyms=4,differential=False):
         if differential:
             val = x_cx*last
             last = val
-            print x, x_cx, val
         else:
             val = x_cx
 
@@ -107,7 +107,11 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
     def testCase(self):
         #f = file('/home/bsg/qpsk.dat','r')
         f = file('/home/bsg/out2','r')
-        s = f.read()
+        try:
+            s = f.read()
+        except:
+            print "cannot read test file"
+            return
         data = list(struct.unpack('%sf' %(len(s)/4),s))
 
         print "got %s data samples" %len(data)
@@ -133,13 +137,6 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             
             matplotlib.pyplot.plot(x, y,'o')
             matplotlib.pyplot.show()
-            fourth = [pow(z,4) for z in cx]
-            matplotlib.pyplot.plot(range(len(fourth)),[cmath.phase(z) for z in fourth] ,'o')
-            matplotlib.pyplot.show()
-            avgPhase = sum([cmath.phase(z) for z in fourth])/len(fourth)
-    
-            matplotlib.pyplot.plot([z.real for z in fourth],[z.imag for z in fourth] ,'o')
-            matplotlib.pyplot.show()
 
 
 #        for startIndex in xrange(10):
@@ -160,7 +157,14 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
 
     def testDiffDecode(self):
         data, syms = genPsk(1000, sampPerBaud=8,numSyms=4,differential=True)
+        
+        print len(data), len(syms)
         dataReal=[]
+        
+        #need to rotate my generated qpsk symbols from being at 0,pi/2,pi, and 3pi/2 to +/-1,+/-j
+        theta = math.pi/4
+        cxScaler= complex(math.cos(theta), math.sin(theta))
+        symsRotated = [cxScaler*x for x in syms]
         
         self.comp.samplesPerBaud=8
         self.comp.constelationSize=4
@@ -168,13 +172,54 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         self.comp.differentialDecoding=True
         dataReal = toReal(data)
         out, bits, phase = self.main(dataReal,100)
-        print len(out), len(syms)
+        outCx = toCx(out)
+        print len(out), len(bits), len(phase)
         
+        #don't include the first output as it is relative to an arbitrary reference
+        #with the differential decoding when measuring the max error
+        maxError = max([abs(x-y) for x, y in zip(outCx[1:],symsRotated[1:])])
+        print "found max error of %s" %maxError
+        assert(maxError < 1e-3)
+
+
+    def testRegular(self):
+        data, syms = genPsk(1000, sampPerBaud=8,numSyms=4,differential=False)
+        
+        print len(data), len(syms)
+        dataReal=[]
+        
+        self.comp.samplesPerBaud=8
+        self.comp.constelationSize=4
+        self.comp.numAvg=100
+        self.comp.differentialDecoding=False
+        dataReal = toReal(data)
+        out, bits, phase = self.main(dataReal,100)
+        outCx = toCx(out)
+        print len(out), len(bits), len(phase)
+        maxError = 1e99
+        #there is an arbitrary phase offset for non-differentailly decoded data
+        #so we will check 4 different rotations to find which one is "correct" and use the 
+        #errror associated with it to ensure that the demod got the right symbols out
+        #we use pi/4 +n*pi/2 because the generator has points at +/1,0, etc but the output points are at
+        #(+/1,+/-1)
+        for theta in [math.pi/4, 3*math.pi/4, 5*math.pi/4, 7*math.pi/4]:
+            #don't include the first output as it is relative to an arbitrary reference
+            #with the differential decoding
+            cxScaler= complex(math.cos(theta), math.sin(theta))
+            print cxScaler
+            outCxRotated = [cxScaler*x for x in outCx]
+            maxError = min(maxError, max([abs(x-y) for x, y in zip(outCxRotated[1:],syms[1:])]))
+            print "found max error of %s" %maxError
+        assert(maxError < 1e-3)        
 
     def test2Case(self):
         #f = file('/home/bsg/qpsk.dat','r')
         f = file('/home/bsg/psk8.dat','r')
-        s = f.read(100000)
+        try:
+            s = f.read(100000)
+        except:
+            print "cannot read test file"
+            return
         data = list(struct.unpack('%sf' %(len(s)/4),s))
 
         print "got %s data samples" %len(data)
