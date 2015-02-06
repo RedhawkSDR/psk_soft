@@ -460,15 +460,40 @@ int psk_soft_i::serviceFunction()
 				//do conversion to bits
 				if (bitsPerBaud==1)
 				{
-					bits.push_back((out.back().real()>0));
+					//
+					//                  |             // A -> 0
+					//                  |             // B -> 1
+					//             B---------A
+					//                  |
+					//                  |
+
+					bits.push_back((out.back().real()<0));
 				}
 				else if (bitsPerBaud==2)
 				{
-					bits.push_back((out.back().real()>0));
-					bits.push_back((out.back().imag()>0));
+					//
+					//             B    |    A         // A -> 00 (0)
+					//                  |              // B -> 01 (1)
+					//              ---------          // C -> 10 (2)
+					//                  |              // D -> 11 (3)
+					//             C    |    D
+
+					bool real = out.back().real();
+					bool imag = out.back().imag();
+					bits.push_back(real ^ imag);
+					bits.push_back(not imag);
 				}
 				else if (bitsPerBaud==3)
 				{
+
+					//                  C
+					//             D    |    B         // A -> 000 (0)   E -> 100 (4)
+					//                  |              // B -> 001 (1)   F -> 101 (5)
+					//            E  --------- A       // C -> 010 (2)   G -> 110 (6)
+					//                  |              // D -> 011 (3)   H -> 111 (7)
+					//             F    |    H
+                    //                  G
+
 					//TIME to map the 8 psk constelation into bits
 					//this was harder then it should have been
 
@@ -479,10 +504,14 @@ int psk_soft_i::serviceFunction()
 
 					//get the phase -pi<theta<pi
 					float theta = arg(out.back());
-					//rotate and scale the symbol so that .5 < softsym < 8.5
-					float softsym = (theta/M_PI+9/8.0)*4;
-					//now perform a floor with the static_cast.  This gives values beweeen 0 < sym < 8
-					unsigned short sym = static_cast<short>(softsym);
+					//convert the phase to soft symobols -4 <=softsym < 4
+					float softsym = theta/M_PI*4;
+					//now wrap the negative numbers over to positive numbers -.5<=softsym<7.5
+					if (softsym <-.5)
+						softsym +=8;
+					//now round to the closest integer
+					//This gives symbols betweeen 0 <=sym<= 7
+					unsigned short sym = round(softsym);
 					//std::cout<<"got phase "<<theta<<", "<<softsym<<", sym "<<sym <<" , ";
 					//now unpack the bits
 					// the trick is that both 0 and 8 have the same values for 3 least significant bits (0,0,0) - so they will produce the same bits;
