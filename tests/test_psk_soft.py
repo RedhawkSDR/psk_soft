@@ -13,6 +13,37 @@ import random
 import cmath
 
 import matplotlib.pyplot
+
+from ossie.utils import bluefile
+from scipy import signal
+
+random.seed(100)
+
+def getDelay(first,second):
+    numFirst = len(first)
+    numSecond = len(second)
+    numPts = min(numFirst,numSecond)
+    c = signal.correlate(first[:numPts],second[:numPts],mode='full')
+    cLen = len(c)
+    matplotlib.pyplot.plot(xrange(cLen), c)
+    matplotlib.pyplot.show()
+    
+    z = zip(c,range(cLen))
+    z.sort()
+    maxIndex =z[-1][1]
+    delay = maxIndex+1-numPts
+    return delay
+
+def diffDecode(data):
+    last=data[0]
+    out=[]
+    for v in data[1:]:
+        d = abs(last - v)
+        #print last, v, d
+        out.append(d)
+        last = v
+    return out
+
                  
 def toClipboard(data):
     import pygtk
@@ -106,17 +137,24 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
 
     def testCase(self):
         #f = file('/home/bsg/qpsk.dat','r')
-        f = file('/home/bsg/out2','r')
-        try:
-            s = f.read()
-        except:
-            print "cannot read test file"
-            return
-        data = list(struct.unpack('%sf' %(len(s)/4),s))
+        #f = file('/home/bsg/out2','r')
+        #try:
+        #    s = f.read()
+        #except:
+        #    print "cannot read test file"
+        #    return
+        #data = list(struct.unpack('%sf' %(len(s)/4),s))
+
+        h, d = bluefile.read('/nishome/bsgrego/TFDoutput.tmp')
+        data=[]
+        for v in d:
+            data.append(float(v.real))
+            data.append(float(v.imag))
 
         print "got %s data samples" %len(data)
 
         self.comp.samplesPerBaud=8
+        self.comp.constelationSize=2
         print self.comp.samplesPerBaud   
         self.comp.numAvg=100   
         out = self.main(data,100)[0]
@@ -180,6 +218,84 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         maxError = max([abs(x-y) for x, y in zip(outCx[1:],symsRotated[1:])])
         print "found max error of %s" %maxError
         assert(maxError < 1e-3)
+
+    def testDiffDecode2(self):
+#         data, syms = genPsk(1000, sampPerBaud=8,numSyms=2,differential=False)
+#         dataReal = toReal(data)
+#           
+#         dataStr = struct.pack('%sf' %len(dataReal),*dataReal)
+#         myFile = file('test_data','w')
+#         myFile.write(dataStr)
+#         myFile.close()
+#            
+#         symsReal = [x.real for x in syms]
+#            
+#         dataStr = struct.pack('%sf' %len(symsReal),*symsReal)
+#         myFile = file('test_syms','w')
+#         myFile.write(dataStr)
+#         myFile.close()
+        
+        f = file('test_data','r')
+        s = f.read()
+        dataReal = list(struct.unpack('%sf' %(len(s)/4),s))
+  
+        f = file('test_syms','r')
+        s = f.read()
+        symsReal = list(struct.unpack('%sf' %(len(s)/4),s))
+         
+        f = file('test_bits','r')
+        s = f.read()
+        myDiffDecoded = list(struct.unpack('%sh' %(len(s)/2),s))
+        
+        
+        #print len(data), len(syms)
+        self.comp.samplesPerBaud=8
+        self.comp.constelationSize=2
+        self.comp.numAvg=100
+        self.comp.differentialDecoding=True
+        
+        out, bits, phase = self.main(dataReal,100)
+        outCx = toCx(out)
+        #print len(out), len(bits), len(phase), len(syms)
+        
+        dataStr = struct.pack('%sh' %len(bits),*bits)
+        myFile = file('test_bits_dc','w')
+        myFile.write(dataStr)
+        myFile.close()
+        
+        
+        symsRealBits = [(x+1)/2.0 for x in symsReal]
+        #symsRealBits = [abs((x-1)/2.0) for x in symsReal]
+        
+        bits = diffDecode(bits)
+        #print bits[:10]
+        
+#         #delay = getDelay(bits, myDiffDecoded)
+#         delay = -1
+#         print "delay = ",  delay
+#         
+#         if delay >=0:
+#             bitsDel = bits[delay:]
+#             myDiffDel = myDiffDecoded
+#         else:
+#             bitsDel = bits
+#             myDiffDel = myDiffDecoded[abs(delay):]
+#         
+#         print bitsDel[:10]
+#         print myDiffDel[:10]
+#             
+#         d = [abs(x-y) for x,y in zip(bitsDel, myDiffDel)]
+#         print "BER = ",  sum(d)/len(d)
+#         
+#         matplotlib.pyplot.plot(range(len(d)), d)
+#         matplotlib.pyplot.show()
+        
+        
+        #don't include the first output as it is relative to an arbitrary reference
+        #with the differential decoding when measuring the max error
+        #print [x-y for x,y in zip(bits,syms[1:])]
+        #print "found max error of %s" %maxError
+        #assert(maxError < 1e-3)
 
 
     def testRegular(self):

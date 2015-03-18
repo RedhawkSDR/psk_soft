@@ -4,6 +4,7 @@ bin_PROGRAMS = psk_soft
 
 xmldir = $(prefix)/dom/components/psk_soft/
 dist_xml_DATA = ../psk_soft.scd.xml ../psk_soft.prf.xml ../psk_soft.spd.xml
+ACLOCAL_AMFLAGS = -I$(OSSIEHOME)/share/aclocal/ossie
 
 
 distclean-local:

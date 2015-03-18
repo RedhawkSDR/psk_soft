@@ -28,12 +28,14 @@ class psk_soft_base : public Resource_impl, protected ThreadedComponent
         unsigned short constelationSize;
         unsigned short phaseAvg;
         bool differentialDecoding;
+        bool resetState;
 
         // Ports
         bulkio::InFloatPort *dataFloat_in;
         bulkio::OutFloatPort *dataFloat_out;
         bulkio::OutShortPort *dataShort_out;
         bulkio::OutFloatPort *phase_out;
+        bulkio::OutShortPort *sampleIndex_out;
 
     private:
 };

@@ -31,4 +31,10 @@
     <kind kindtype="configure"/>
     <action type="external"/>
   </simple>
+  <simple id="resetState" mode="readwrite" type="boolean">
+    <description>try to reset the demod's state if things go south</description>
+    <value>false</value>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
 </properties>

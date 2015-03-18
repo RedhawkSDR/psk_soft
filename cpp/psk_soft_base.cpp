@@ -24,6 +24,8 @@ psk_soft_base::psk_soft_base(const char *uuid, const char *label) :
     addPort("dataShort_out", dataShort_out);
     phase_out = new bulkio::OutFloatPort("phase_out");
     addPort("phase_out", phase_out);
+    sampleIndex_out = new bulkio::OutShortPort("sampleIndex_out");
+    addPort("sampleIndex_out", sampleIndex_out);
 }
 
 psk_soft_base::~psk_soft_base()
@@ -36,6 +38,8 @@ psk_soft_base::~psk_soft_base()
     dataShort_out = 0;
     delete phase_out;
     phase_out = 0;
+    delete sampleIndex_out;
+    sampleIndex_out = 0;
 }
 
 /*******************************************************************************************
@@ -109,6 +113,15 @@ void psk_soft_base::loadProperties()
     addProperty(differentialDecoding,
                 false,
                 "differentialDecoding",
+                "",
+                "readwrite",
+                "",
+                "external",
+                "configure");
+
+    addProperty(resetState,
+                false,
+                "resetState",
                 "",
                 "readwrite",
                 "",

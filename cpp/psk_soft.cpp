@@ -17,12 +17,16 @@ LinearFit::LinearFit (size_t numPts, float sampleRate):
 	ySum(0),
 	xySum(0),
 	n(numPts),
-	xdelta(1.0/sampleRate)
+	xdelta(1.0/sampleRate),
+	count(0)
 {
 }
 
 float LinearFit::next(float yval)
 {
+	//try to cope with systemic floating point math errors
+	if (count==1048576)
+		reset();
 	//are we currently in steady state
 	bool steadyState =  yvals.size()==n;
 	if (steadyState)
@@ -56,6 +60,7 @@ float LinearFit::next(float yval)
 		//if the size of our data vector has changed we need to recalculate the denominator
 		calculateDenominator();
 	//calculate the best fit given our state
+	count++;
 	return calculateFit();
 }
 
@@ -91,6 +96,7 @@ float LinearFit::reset(size_t* numPts, float* sampleRate, bool forceHistoryClear
 		xySum+=j*xdelta*(*i);
 	}
 	calculateDenominator();
+	count=0;
     return calculateFit();
 
 }
@@ -165,6 +171,7 @@ psk_soft_i::psk_soft_i(const char *uuid, const char *label) :
     resetPhaseAvg(false),
     phaseEstimate(0.0),
     sampleRate(1.0), //put in a bogus sample rate we will update it later
+    count(0),
     phaseEstimator(phaseAvg,sampleRate)
 {
 	 setPropertyChangeListener("samplesPerBaud", this, &psk_soft_i::samplesPerBaudChanged);
@@ -322,11 +329,25 @@ int psk_soft_i::serviceFunction()
 		return NORMAL;
 	}
 
+	if (resetState)
+	{
+		LOG_DEBUG(psk_soft_i, "psk_soft_i reset state");
+		resetSamplesPerBaud=true;
+		resetNumSymbols=true;
+		resetPhaseAvg=true;
+		resetState = false;
+	}
+
 	//cash off local values in case user configures properties during our processing loop
 
-	size_t samplesPerSymbol = samplesPerBaud;
-	size_t numDataPts = samplesPerSymbol*numAvg;
-	size_t numSyms = constelationSize;
+	const size_t samplesPerSymbol = samplesPerBaud;
+	const size_t numDataPts = samplesPerSymbol*numAvg;
+	const size_t numSyms = constelationSize;
+	//this should only happen if numAvg or samplesPerBaud has shrunk
+	if (numDataPts > samples.size())
+	{
+		resetSamplesPerBaud = true;
+	}
 	size_t bitsPerBaud=0;
 	if (numSyms==2)
 		bitsPerBaud=1;
@@ -353,21 +374,7 @@ int psk_soft_i::serviceFunction()
 	//user has changed our oversample factor - resize the symbolEnergy vector and repopulate it with the energy samples
 	if (resetSamplesPerBaud)
 	{
-		symbolEnergy.assign(samplesPerSymbol,0.0);
-		if (samples.size()> numDataPts)
-		{
-			samples.erase(samples.begin()+numDataPts,samples.end());
-			energy.erase(energy.begin()+numDataPts,energy.end());
-		}
-		index=0;
-		for (std::deque<double>::iterator i = energy.begin(); i!= energy.end(); i++)
-		{
-			symbolEnergy[index]+=*i;
-			index++;
-			if (index==samplesPerSymbol)
-				index=0;
-		}
-
+		resyncEnergy(samplesPerSymbol, numDataPts);
 		resetSamplesPerBaud=false;
 	}
 
@@ -394,6 +401,8 @@ int psk_soft_i::serviceFunction()
 	out.reserve((dataVec->size()+index)/samplesPerSymbol);
 	phase_vec.reserve(out.size());
 	bits.reserve(out.size()*bitsPerBaud);
+    std::vector<short> sampleIndexOut;
+    sampleIndexOut.reserve(out.size());
 
 	std::complex<float> sample;
 	const size_t lastSample = samplesPerSymbol-1;
@@ -421,6 +430,7 @@ int psk_soft_i::serviceFunction()
 
 					//this is the sample we need to output
 					sample= *(samples.begin()+sampleIndex);
+					sampleIndexOut.push_back(sampleIndex);
 				}
 				else
 					sample = *i;
@@ -539,6 +549,9 @@ int psk_soft_i::serviceFunction()
 					//remove all samples from this symbol from the samples & energy containers
 					energy.erase(energy.begin(), energyIterEnd);
 					samples.erase(samples.begin(), samples.begin()+samplesPerSymbol);
+					count++;
+					if (count==1048576)
+						resyncEnergy(samplesPerSymbol, numDataPts);
 				}
 			}
 			//reset our symbolIndex back to 0
@@ -570,8 +583,28 @@ int psk_soft_i::serviceFunction()
 		dataShort_out->pushPacket(bits, tmp->T, tmp->EOS, tmp->streamID);
 	if (!phase_vec.empty())
 		phase_out->pushPacket(phase_vec, tmp->T, tmp->EOS, tmp->streamID);
+	if (!sampleIndexOut.empty())
+		sampleIndex_out->pushPacket(sampleIndexOut, tmp->T, tmp->EOS, tmp->streamID);
 	delete tmp; // IMPORTANT: MUST RELEASE THE RECEIVED DATA BLOCK
 	return NORMAL;
+}
+void psk_soft_i::resyncEnergy(const size_t& samplesPerSymbol, const size_t& numDataPts)
+{
+	symbolEnergy.assign(samplesPerSymbol,0.0);
+	if (samples.size()> numDataPts)
+	{
+		samples.erase(samples.begin()+numDataPts,samples.end());
+		energy.erase(energy.begin()+numDataPts,energy.end());
+	}
+	index=0;
+	for (std::deque<double>::iterator i = energy.begin(); i!= energy.end(); i++)
+	{
+		symbolEnergy[index]+=*i;
+		index++;
+		if (index==samplesPerSymbol)
+			index=0;
+	}
+	count=0;
 }
 
 void psk_soft_i::samplesPerBaudChanged(const std::string& id){

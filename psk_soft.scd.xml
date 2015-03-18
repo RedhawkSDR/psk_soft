@@ -21,6 +21,7 @@
         <porttype type="data"/>
       </uses>
       <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="phase_out"/>
+      <uses repid="IDL:BULKIO/dataShort:1.0" usesname="sampleIndex_out"/>
     </ports>
   </componentfeatures>
   <interfaces>

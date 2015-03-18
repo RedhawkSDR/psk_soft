@@ -32,6 +32,7 @@ private:
 	float xdelta;
 	float denominator;
 	float xAvg;
+	size_t count;
 };
 
 
@@ -59,6 +60,10 @@ class psk_soft_i : public psk_soft_base
 
         float phaseEstimate;
         float sampleRate;
+
+        size_t count;
+
+        void resyncEnergy(const size_t& samplesPerSymbol, const size_t& numDataPts);
 
         LinearFit phaseEstimator;
 };
