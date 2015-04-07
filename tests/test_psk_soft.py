@@ -31,7 +31,9 @@ import math
 import random
 import cmath
 
-import matplotlib.pyplot
+DISPLAY=False
+if DISPLAY:
+    import matplotlib.pyplot
 
 from ossie.utils import bluefile
 from scipy import signal
@@ -44,8 +46,9 @@ def getDelay(first,second):
     numPts = min(numFirst,numSecond)
     c = signal.correlate(first[:numPts],second[:numPts],mode='full')
     cLen = len(c)
-    matplotlib.pyplot.plot(xrange(cLen), c)
-    matplotlib.pyplot.show()
+    if DISPLAY:
+        matplotlib.pyplot.plot(xrange(cLen), c)
+        matplotlib.pyplot.show()
     
     z = zip(c,range(cLen))
     z.sort()
@@ -62,7 +65,6 @@ def diffDecode(data):
         out.append(d)
         last = v
     return out
-
                  
 def toClipboard(data):
     import pygtk
@@ -155,8 +157,8 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         ossie.utils.testing.ScaComponentTestCase.tearDown(self)
 
     def testCase(self):
-        #f = file('/home/bsg/qpsk.dat','r')
-        #f = file('/home/bsg/out2','r')
+        #f = file('./qpsk.dat','r')
+        #f = file('./out2','r')
         #try:
         #    s = f.read()
         #except:
@@ -164,7 +166,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         #    return
         #data = list(struct.unpack('%sf' %(len(s)/4),s))
 
-        h, d = bluefile.read('/nishome/bsgrego/TFDoutput.tmp')
+        h, d = bluefile.read('./TFDoutput.tmp')
         data=[]
         for v in d:
             data.append(float(v.real))
@@ -179,8 +181,9 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         out = self.main(data,100)[0]
         print len(out)
          
-        #         matplotlib.pyplot.plot(out[::2], out[1::2],'o')
-        #         matplotlib.pyplot.show()
+        #if DISPLAY:
+        #     matplotlib.pyplot.plot(out[::2], out[1::2],'o')
+        #     matplotlib.pyplot.show()
         
         if out:
             startSample=0
@@ -192,8 +195,9 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             y = out[2*startIndex+1:finalIndex:resampleFactor*2]
             cx = [complex(i,j) for i,j in zip(x,y)]
             
-            matplotlib.pyplot.plot(x, y,'o')
-            matplotlib.pyplot.show()
+            if DISPLAY:
+                matplotlib.pyplot.plot(x, y,'o')
+                matplotlib.pyplot.show()
 
 
 #        for startIndex in xrange(10):
@@ -207,10 +211,11 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             #print x
             #print y
             #print data[:10]
-            matplotlib.pyplot.plot(x,y,'o')
-            matplotlib.pyplot.show()
-            #matplotlib.pyplot.plot(xrange(len(x)),x,'o')
-            #matplotlib.pyplot.show()
+            if DISPLAY:
+                matplotlib.pyplot.plot(x,y,'o')
+                matplotlib.pyplot.show()
+                #matplotlib.pyplot.plot(xrange(len(x)),x,'o')
+                #matplotlib.pyplot.show()
 
     def testDiffDecode(self):
         data, syms = genPsk(1000, sampPerBaud=8,numSyms=4,differential=True)
@@ -348,8 +353,8 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         assert(maxError < 1e-3)        
 
     def test2Case(self):
-        #f = file('/home/bsg/qpsk.dat','r')
-        f = file('/home/bsg/psk8.dat','r')
+        #f = file('./qpsk.dat','r')
+        f = file('./psk8.dat','r')
         try:
             s = f.read(100000)
         except:
@@ -379,8 +384,9 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             toClipboard(bits)
             print len(out), len(bits)
              
-            #         matplotlib.pyplot.plot(out[::2], out[1::2],'o')
-            #         matplotlib.pyplot.show()
+            #if DISPLAY:
+            #    matplotlib.pyplot.plot(out[::2], out[1::2],'o')
+            #    matplotlib.pyplot.show()
             
             startSample=0
             endSample=20
@@ -391,15 +397,17 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             y = out[2*startIndex+1:finalIndex:resampleFactor*2]
             cx = [complex(i,j) for i,j in zip(x,y)]
             
-            matplotlib.pyplot.plot(x, y,'o')
-            matplotlib.pyplot.show()
+            if DISPLAY:
+                matplotlib.pyplot.plot(x, y,'o')
+                matplotlib.pyplot.show()
             power = [pow(z,8) for z in cx]
             
-            matplotlib.pyplot.plot(range(len(phase)), phase)
-            matplotlib.pyplot.show()
-            
-            matplotlib.pyplot.plot(range(len(power)),[cmath.phase(z) for z in power] ,'o')
-            matplotlib.pyplot.show()
+            if DISPLAY:
+                matplotlib.pyplot.plot(range(len(phase)), phase)
+                matplotlib.pyplot.show()
+                
+                matplotlib.pyplot.plot(range(len(power)),[cmath.phase(z) for z in power] ,'o')
+                matplotlib.pyplot.show()
             avgPhase = sum([cmath.phase(z) for z in power])/len(power)
 
 
