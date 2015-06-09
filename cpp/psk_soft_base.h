@@ -17,16 +17,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#ifndef PSK_SOFT_IMPL_BASE_H
-#define PSK_SOFT_IMPL_BASE_H
+#ifndef PSK_SOFT_BASE_IMPL_BASE_H
+#define PSK_SOFT_BASE_IMPL_BASE_H
 
 #include <boost/thread.hpp>
-#include <ossie/Resource_impl.h>
+#include <ossie/Component.h>
 #include <ossie/ThreadedComponent.h>
 
 #include <bulkio/bulkio.h>
 
-class psk_soft_base : public Resource_impl, protected ThreadedComponent
+class psk_soft_base : public Component, protected ThreadedComponent
 {
     public:
         psk_soft_base(const char *uuid, const char *label);
@@ -58,4 +58,4 @@ class psk_soft_base : public Resource_impl, protected ThreadedComponent
 
     private:
 };
-#endif // PSK_SOFT_IMPL_BASE_H
+#endif // PSK_SOFT_BASE_IMPL_BASE_H

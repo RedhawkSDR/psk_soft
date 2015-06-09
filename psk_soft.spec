@@ -30,7 +30,7 @@ Prefix:         %{_prefix}
 %define _infodir       %{_prefix}/info
 
 Name:           psk_soft
-Version:        1.0.0
+Version:        2.0.0
 Release:        1%{?dist}
 Summary:        Component %{name}
 
@@ -39,12 +39,14 @@ License:        None
 Source0:        %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:  redhawk-devel >= 1.10
-Requires:       redhawk >= 1.10
+BuildRequires:  redhawk-devel >= 2.0
+Requires:       redhawk >= 2.0
+
 
 # Interface requirements
-BuildRequires:  bulkioInterfaces >= 1.10
-Requires:       bulkioInterfaces >= 1.10
+BuildRequires:  bulkioInterfaces >= 2.0
+Requires:       bulkioInterfaces >= 2.0
+
 
 %description
 Component %{name}
@@ -79,9 +81,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,redhawk,redhawk,-)
-%dir %{_prefix}/dom/components/%{name}
-%{_prefix}/dom/components/%{name}/psk_soft.scd.xml
-%{_prefix}/dom/components/%{name}/psk_soft.prf.xml
-%{_prefix}/dom/components/%{name}/psk_soft.spd.xml
-%{_prefix}/dom/components/%{name}/cpp
+%dir %{_prefix}/dom/components/psk_soft
+%{_prefix}/dom/components/psk_soft/psk_soft.scd.xml
+%{_prefix}/dom/components/psk_soft/psk_soft.prf.xml
+%{_prefix}/dom/components/psk_soft/psk_soft.spd.xml
+%{_prefix}/dom/components/psk_soft/cpp
 

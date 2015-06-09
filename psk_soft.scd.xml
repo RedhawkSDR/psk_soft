@@ -31,16 +31,45 @@ with this program.  If not, see http://www.gnu.org/licenses/.
     <supportsinterface repid="IDL:CF/TestableObject:1.0" supportsname="TestableObject"/>
     <ports>
       <provides repid="IDL:BULKIO/dataFloat:1.0" providesname="dataFloat_in">
+        <description>Float input for complex baseband data to be demodulated. </description>
         <porttype type="data"/>
       </provides>
       <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="dataFloat_out">
+        <description>Complex Soft-Desition output. </description>
         <porttype type="data"/>
       </uses>
       <uses repid="IDL:BULKIO/dataShort:1.0" usesname="dataShort_out">
+        <description>Short output for bits, zero or one. Differential Decoding can be turned on with a property setting.
+Symbol to Bit Mapping as follows:
+2 Symbols: 	Phase: 0 		Bit: 0
+					Phase: pi		Bit: 1
+
+4 Symbols: 
+					Phase: pi/4 		Bit: 0
+					Phase: 3pi/4	Bit: 01
+					Phase: 5pi/4	Bit: 10
+					Phase: 7pi/4	Bit: 11
+
+8 Symbols: 
+					Phase: 0			Bit: 000
+					Phase: pi/4		Bit: 001
+					Phase: pi/2		Bit: 010
+					Phase: 3pi/4	Bit: 011
+					Phase: pi 		Bit: 100
+					Phase: 5pi/4	Bit: 101
+					Phase: 3pi/2	Bit: 110
+					Phase: 7pi/4	Bit: 111
+
+</description>
         <porttype type="data"/>
       </uses>
-      <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="phase_out"/>
-      <uses repid="IDL:BULKIO/dataShort:1.0" usesname="sampleIndex_out"/>
+      <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="phase_out">
+        <description>Float output containing phase estimate for debuggging. One phase estimate per symbol output. Phase is unwrapped.   
+</description>
+      </uses>
+      <uses repid="IDL:BULKIO/dataShort:1.0" usesname="sampleIndex_out">
+        <description>Index of sample used in timing recovery chosen for symbol output. Will range from 0 to samplesPerBaud-1.  </description>
+      </uses>
     </ports>
   </componentfeatures>
   <interfaces>
