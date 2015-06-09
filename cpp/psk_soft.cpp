@@ -43,7 +43,7 @@ LinearFit::LinearFit (size_t numPts, float sampleRate):
 
 float LinearFit::next(float yval)
 {
-	//try to cope with systemic floating point math errors
+	//try to cope with systematic floating point math errors
 	if (count==1048576)
 		reset();
 	//are we currently in steady state
@@ -68,10 +68,10 @@ float LinearFit::next(float yval)
 		yvals.pop_front();
 		xySum-=xdelta*ySum;
 	}
-	//update our state for our new point acording to the update equations
+	//update our state for our new point according to the update equations
 	ySum+=yval;
 	//this is actually multiplying by yval*(n-1)*xdelta
-	//because we haven't yet pushed_back the new value.  This is intenional
+	//because we haven't yet pushed_back the new value.  This is intentional
 	xySum+=yval*yvals.size()*xdelta;
 	yvals.push_back(yval);
 
@@ -131,7 +131,7 @@ float LinearFit::subtractConst(float yval)
 
 float LinearFit::calculateFit()
 {
-	// The General best fit for a linear fit (to minimize avg error is as follows:
+	// The General best fit for a linear fit (to minimize avg error) is as follows:
 
 	// y = mx+b
 	// numerator = sum(xi*yi) -1/n*sum(xi)*sum(yi);
@@ -189,7 +189,7 @@ psk_soft_i::psk_soft_i(const char *uuid, const char *label) :
     resetNumSymbols(false),
     resetPhaseAvg(false),
     phaseEstimate(0.0),
-    sampleRate(1.0), //put in a bogus sample rate we will update it later
+    sampleRate(1.0), //put in an initial sample rate we will update it later
     count(0),
     phaseEstimator(phaseAvg,sampleRate)
 {
@@ -357,7 +357,7 @@ int psk_soft_i::serviceFunction()
 		resetState = false;
 	}
 
-	//cash off local values in case user configures properties during our processing loop
+	//store off local values in case user configures properties during our processing loop
 
 	const size_t samplesPerSymbol = samplesPerBaud;
 	const size_t numDataPts = samplesPerSymbol*numAvg;
@@ -390,14 +390,14 @@ int psk_soft_i::serviceFunction()
 		dataShort_out->pushSRI(tmp->SRI);
 	}
 
-	//user has changed our oversample factor - resize the symbolEnergy vector and repopulate it with the energy samples
+	//user has changed our oversample factor - resize the symbolEnergy vector and re-populate it with the energy samples
 	if (resetSamplesPerBaud)
 	{
 		resyncEnergy(samplesPerSymbol, numDataPts);
 		resetSamplesPerBaud=false;
 	}
 
-	//all our phase caluclations are invalid if we change our constelation size
+	//all our phase calculations are invalid if we change our constellation size
 	//just clear the phaseSum and the phaseVec and start with new estimates
 	if (resetNumSymbols)
 	{
@@ -439,7 +439,7 @@ int psk_soft_i::serviceFunction()
 		//when we reach the end of the next symbol
 		if (index== lastSample)
 		{
-			//if we have enough samples to get meaningful averages we start outputing data
+			//if we have enough samples to get meaningful averages we start outputting data
 			if (samples.size()==numDataPts)
 			{
 				if (samplesPerSymbol>1)
@@ -454,11 +454,10 @@ int psk_soft_i::serviceFunction()
 				else
 					sample = *i;
 
-				//algorthim to compensate for phase offset
+				//algorithm to compensate for phase offset
 				//note this isn't needed for differential decoding
 				//but since we have phase as a debug float out we do the calculations regardless
 				double thisPhase = arg(pow(sample,numSyms));
-//				std::cout<<"thisPhase = "<<thisPhase<<std::endl;
 
 				//do phase unwrapping here with previous phase estimates
 				long numWraps = round((phaseEstimate-thisPhase)/M_2PI);
@@ -526,31 +525,28 @@ int psk_soft_i::serviceFunction()
 					//TIME to map the 8 psk constelation into bits
 					//this was harder then it should have been
 
-					// we have clusters arround theta 0, pi/4, pi/2, 3pi/4, pi, 5pi/4, 3pi/2, 7pi/8
+					// we have clusters around theta 0, pi/4, pi/2, 3pi/4, pi, 5pi/4, 3pi/2, 7pi/8
 					// however, arg returns a number between -pi and pi.  Those phases near -pi AND near pi map to the same cluster
 
-					//this is what we do to provide some rudamentary mapping
+					//this is what we do to provide some rudimentary mapping
 
 					//get the phase -pi<theta<pi
 					float theta = arg(out.back());
-					//convert the phase to soft symobols -4 <=softsym < 4
+					//convert the phase to soft symbols -4 <=softsym < 4
 					float softsym = theta/M_PI*4;
 					//now wrap the negative numbers over to positive numbers -.5<=softsym<7.5
 					if (softsym <-.5)
 						softsym +=8;
 					//now round to the closest integer
-					//This gives symbols betweeen 0 <=sym<= 7
+					//This gives symbols between 0 <=sym<= 7
 					unsigned short sym = round(softsym);
-					//std::cout<<"got phase "<<theta<<", "<<softsym<<", sym "<<sym <<" , ";
 					//now unpack the bits
 					// the trick is that both 0 and 8 have the same values for 3 least significant bits (0,0,0) - so they will produce the same bits;
 					for (size_t j=0; j!=3; j++)
 					{
 						bits.push_back(sym&1);
 						sym=sym>>1;
-						//std::cout<<bits.back();
 					}
-					//std::cout<<std::endl;
 				}
 				else
 					std::cout<<"numSyms "<<numSyms<< " not supported - no bits out"<<std::endl;
@@ -579,17 +575,16 @@ int psk_soft_i::serviceFunction()
 		else
 			index++;
 	}
-	//wrap phase estimate back to a reasonable value to keep it from going to infinitie
+	//wrap phase estimate back to a reasonable value to keep it from going to infinite
 	//we wrap about numSyms*2pi and NOT 2PI or we introduce phase offsets
-	//since phaseEstimate is the estiamte of the numSyms power of the phase
+	//since phaseEstimate is the estimate of the numSyms power of the phase
 	float wrapValue = M_2PI*numSyms;
 	if (abs(phaseEstimate)> wrapValue)
 	{
 		long numWraps = round(phaseEstimate/wrapValue);
-		//we subtract the phaseOffset from the estiamtor.  This takes care of doing it for all the history
+		//we subtract the phaseOffset from the estimator.  This takes care of doing it for all the history
 		//and reseting the state
 		float newPhaseEstimate = phaseEstimator.subtractConst(numWraps*wrapValue);
-		//assert(abs((phaseEstimate-numWraps*M_2PI)-out)<.01);
 		phaseEstimate = newPhaseEstimate;
 	}
 
