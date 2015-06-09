@@ -19,7 +19,7 @@ You should have received a copy of the GNU Lesser General Public License along
 with this program.  If not, see http://www.gnu.org/licenses/.
 -->
 <!DOCTYPE softpkg PUBLIC "-//JTRS//DTD SCA V2.2.2 SPD//EN" "softpkg.dtd">
-<softpkg id="DCE:f4bae882-3fff-43cf-9893-a4cc7e977481" name="psk_soft" type="sca_compliant">
+<softpkg id="DCE:f4bae882-3fff-43cf-9893-a4cc7e977481" name="psk_soft" type="sca_compliant" version="1.0.0">
   <title></title>
   <author>
     <name>null</name>
