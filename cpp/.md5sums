@@ -2,8 +2,8 @@ ab86aea79b7dc4b6bf9cfa126f645b41  main.cpp
 c99df9fa4ab0cd042eac42fcee6441c3  reconf
 d8f843c15097fa66ea8f69f8710f03e7  psk_soft_base.cpp
 4386787e0eb835942e349ffcecff21b6  psk_soft_base.h
-ba65bb99c9d15dfacffe611af2350fd4  configure.ac
-c5d06b1e9e99606ede41bf5b939e6387  Makefile.am
+a70c20d79b7ab7d1f32134e6716afb14  configure.ac
+708dc118e06fcff1ca7592a3df4a055c  Makefile.am
 ffe8e2e0bcc34f96a85c206990aaeba2  psk_soft.cpp
 7d2cd713da04986771f281784508a89d  Makefile.am.ide
 12df856cd3744fb5019fc3a99fc6685e  psk_soft.h

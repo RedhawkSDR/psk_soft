@@ -29,7 +29,7 @@ Prefix:         %{_prefix}
 %define _mandir        %{_prefix}/man
 %define _infodir       %{_prefix}/info
 
-Name:           psk_soft
+Name:           rh.psk_soft
 Version:        2.0.0
 Release:        1%{?dist}
 Summary:        Component %{name}
@@ -60,7 +60,7 @@ Component %{name}
 # Implementation cpp
 pushd cpp
 ./reconf
-%define _bindir %{_prefix}/dom/components/psk_soft/cpp
+%define _bindir %{_prefix}/dom/components/rh/psk_soft/cpp
 %configure
 make %{?_smp_mflags}
 popd
@@ -70,7 +70,7 @@ popd
 rm -rf $RPM_BUILD_ROOT
 # Implementation cpp
 pushd cpp
-%define _bindir %{_prefix}/dom/components/psk_soft/cpp
+%define _bindir %{_prefix}/dom/components/rh/psk_soft/cpp
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
@@ -81,9 +81,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,redhawk,redhawk,-)
-%dir %{_prefix}/dom/components/psk_soft
-%{_prefix}/dom/components/psk_soft/psk_soft.scd.xml
-%{_prefix}/dom/components/psk_soft/psk_soft.prf.xml
-%{_prefix}/dom/components/psk_soft/psk_soft.spd.xml
-%{_prefix}/dom/components/psk_soft/cpp
+%dir %{_prefix}/dom/components/rh/psk_soft
+%{_prefix}/dom/components/rh/psk_soft/psk_soft.scd.xml
+%{_prefix}/dom/components/rh/psk_soft/psk_soft.prf.xml
+%{_prefix}/dom/components/rh/psk_soft/psk_soft.spd.xml
+%{_prefix}/dom/components/rh/psk_soft/cpp
 

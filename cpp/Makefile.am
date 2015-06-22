@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 #
-ossieName = psk_soft
-bindir = $(prefix)/dom/components/psk_soft/cpp/
+ossieName = rh.psk_soft
+bindir = $(prefix)/dom/components/rh/psk_soft/cpp/
 bin_PROGRAMS = psk_soft
 
-xmldir = $(prefix)/dom/components/psk_soft/
+xmldir = $(prefix)/dom/components/rh/psk_soft/
 dist_xml_DATA = ../psk_soft.scd.xml ../psk_soft.prf.xml ../psk_soft.spd.xml
 ACLOCAL_AMFLAGS = -I$(OSSIEHOME)/share/aclocal/ossie
 
