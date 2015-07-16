@@ -23,39 +23,39 @@ with this program.  If not, see http://www.gnu.org/licenses/.
   <simple id="samplesPerBaud" mode="readwrite" type="ushort">
     <description>Number of samples per symbol the input data is sending in. Recommended 8-10. </description>
     <value>10</value>
-    <kind kindtype="configure"/>
+    <kind kindtype="property"/>
     <action type="external"/>
   </simple>
   <simple id="numAvg" mode="readwrite" type="ulong">
     <description>Number of symbols to average to determine sample Index used in timeing recovery. More averages will be more accurate but respond more slowly to changes. </description>
     <value>100</value>
-    <kind kindtype="configure"/>
+    <kind kindtype="property"/>
     <action type="external"/>
   </simple>
   <simple id="constelationSize" mode="readwrite" type="ushort">
     <description>number of points in the constelation 
 (2 for bpsk, 4 for qpsk, etc).</description>
     <value>4</value>
-    <kind kindtype="configure"/>
+    <kind kindtype="property"/>
     <action type="external"/>
   </simple>
   <simple id="phaseAvg" mode="readwrite" type="ushort">
     <description>Number of points used to determine the phase offset in order to correct for center frequency offset. More averages will be more accurate but respond more slowly to changes. 
 </description>
     <value>50</value>
-    <kind kindtype="configure"/>
+    <kind kindtype="property"/>
     <action type="external"/>
   </simple>
   <simple id="differentialDecoding" mode="readwrite" type="boolean">
     <description>Turn on or off differential decoding for the bits output. </description>
     <value>False</value>
-    <kind kindtype="configure"/>
+    <kind kindtype="property"/>
     <action type="external"/>
   </simple>
   <simple id="resetState" mode="readwrite" type="boolean">
     <description>Resets demod state. Could be used if input data drastically changed and and tracking algorithms should be reset. </description>
     <value>false</value>
-    <kind kindtype="configure"/>
+    <kind kindtype="property"/>
     <action type="external"/>
   </simple>
 </properties>

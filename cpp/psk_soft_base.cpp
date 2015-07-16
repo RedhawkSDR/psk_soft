@@ -33,6 +33,7 @@ psk_soft_base::psk_soft_base(const char *uuid, const char *label) :
     Component(uuid, label),
     ThreadedComponent()
 {
+#ifdef BEGIN_AUTOCOMPLETE_IGNORE
     loadProperties();
 
     dataFloat_in = new bulkio::InFloatPort("dataFloat_in");
@@ -45,6 +46,7 @@ psk_soft_base::psk_soft_base(const char *uuid, const char *label) :
     addPort("phase_out", "Float output containing phase estimate for debuggging. One phase estimate per symbol output. Phase is unwrapped.   \n", phase_out);
     sampleIndex_out = new bulkio::OutShortPort("sampleIndex_out");
     addPort("sampleIndex_out", "Index of sample used in timing recovery chosen for symbol output. Will range from 0 to samplesPerBaud-1.  ", sampleIndex_out);
+#endif
 }
 
 psk_soft_base::~psk_soft_base()
@@ -61,6 +63,7 @@ psk_soft_base::~psk_soft_base()
     sampleIndex_out = 0;
 }
 
+#ifdef BEGIN_AUTOCOMPLETE_IGNORE
 /*******************************************************************************************
     Framework-level functions
     These functions are generally called by the framework to perform housekeeping.
@@ -100,7 +103,7 @@ void psk_soft_base::loadProperties()
                 "readwrite",
                 "",
                 "external",
-                "configure");
+                "property");
 
     addProperty(numAvg,
                 100,
@@ -109,7 +112,7 @@ void psk_soft_base::loadProperties()
                 "readwrite",
                 "",
                 "external",
-                "configure");
+                "property");
 
     addProperty(constelationSize,
                 4,
@@ -118,7 +121,7 @@ void psk_soft_base::loadProperties()
                 "readwrite",
                 "",
                 "external",
-                "configure");
+                "property");
 
     addProperty(phaseAvg,
                 50,
@@ -127,7 +130,7 @@ void psk_soft_base::loadProperties()
                 "readwrite",
                 "",
                 "external",
-                "configure");
+                "property");
 
     addProperty(differentialDecoding,
                 false,
@@ -136,7 +139,7 @@ void psk_soft_base::loadProperties()
                 "readwrite",
                 "",
                 "external",
-                "configure");
+                "property");
 
     addProperty(resetState,
                 false,
@@ -145,8 +148,9 @@ void psk_soft_base::loadProperties()
                 "readwrite",
                 "",
                 "external",
-                "configure");
+                "property");
 
 }
+#endif
 
 

@@ -50,6 +50,8 @@ Requires:       bulkioInterfaces >= 2.0
 
 %description
 Component %{name}
+ * Commit: __REVISION__
+ * Source Date/Time: __DATETIME__
 
 
 %prep

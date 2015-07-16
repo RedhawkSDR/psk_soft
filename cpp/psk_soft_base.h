@@ -32,6 +32,10 @@ class psk_soft_base : public Component, protected ThreadedComponent
         psk_soft_base(const char *uuid, const char *label);
         ~psk_soft_base();
 
+#ifdef BEGIN_AUTOCOMPLETE_IGNORE
+    /**
+     * \cond INTERNAL
+     */
         void start() throw (CF::Resource::StartError, CORBA::SystemException);
 
         void stop() throw (CF::Resource::StopError, CORBA::SystemException);
@@ -39,21 +43,36 @@ class psk_soft_base : public Component, protected ThreadedComponent
         void releaseObject() throw (CF::LifeCycle::ReleaseError, CORBA::SystemException);
 
         void loadProperties();
+    /**
+     * \endcond
+     */
+#endif
 
     protected:
         // Member variables exposed as properties
+        /// Property: samplesPerBaud
         unsigned short samplesPerBaud;
+        /// Property: numAvg
         CORBA::ULong numAvg;
+        /// Property: constelationSize
         unsigned short constelationSize;
+        /// Property: phaseAvg
         unsigned short phaseAvg;
+        /// Property: differentialDecoding
         bool differentialDecoding;
+        /// Property: resetState
         bool resetState;
 
         // Ports
+        /// Port: dataFloat_in
         bulkio::InFloatPort *dataFloat_in;
+        /// Port: dataFloat_out
         bulkio::OutFloatPort *dataFloat_out;
+        /// Port: dataShort_out
         bulkio::OutShortPort *dataShort_out;
+        /// Port: phase_out
         bulkio::OutFloatPort *phase_out;
+        /// Port: sampleIndex_out
         bulkio::OutShortPort *sampleIndex_out;
 
     private:
