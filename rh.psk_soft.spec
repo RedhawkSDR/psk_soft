@@ -47,6 +47,10 @@ Requires:       redhawk >= 2.0
 BuildRequires:  bulkioInterfaces >= 2.0
 Requires:       bulkioInterfaces >= 2.0
 
+# Allow upgrades from previous package name
+Obsoletes:      psk_soft < 2.0.0
+
+
 
 %description
 Component %{name}
