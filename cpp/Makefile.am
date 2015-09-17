@@ -23,10 +23,13 @@ bin_PROGRAMS = psk_soft
 
 xmldir = $(prefix)/dom/components/rh/psk_soft/
 dist_xml_DATA = ../psk_soft.scd.xml ../psk_soft.prf.xml ../psk_soft.spd.xml
-ACLOCAL_AMFLAGS = -I$(OSSIEHOME)/share/aclocal/ossie
+ACLOCAL_AMFLAGS = -I m4 -I${OSSIEHOME}/share/aclocal/ossie
+AUTOMAKE_OPTIONS = subdir-objects
+
 
 
 distclean-local:
+	rm -rf m4
 	rm -f config.*
 	rm -rf autom4te.cache
 	rm -f acinclude.m4
