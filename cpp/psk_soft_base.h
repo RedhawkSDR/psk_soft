@@ -58,14 +58,14 @@ class psk_soft_base : public Component, protected ThreadedComponent
         // Ports
         /// Port: dataFloat_in
         bulkio::InFloatPort *dataFloat_in;
-        /// Port: dataFloat_out
-        bulkio::OutFloatPort *dataFloat_out;
-        /// Port: dataShort_out
-        bulkio::OutShortPort *dataShort_out;
-        /// Port: phase_out
-        bulkio::OutFloatPort *phase_out;
-        /// Port: sampleIndex_out
-        bulkio::OutShortPort *sampleIndex_out;
+        /// Port: softDecision_dataFloat_out
+        bulkio::OutFloatPort *softDecision_dataFloat_out;
+        /// Port: bits_dataShort_out
+        bulkio::OutShortPort *bits_dataShort_out;
+        /// Port: phase_dataFloat_out
+        bulkio::OutFloatPort *phase_dataFloat_out;
+        /// Port: sampleIndex_dataShort_out
+        bulkio::OutShortPort *sampleIndex_dataShort_out;
 
     private:
 };

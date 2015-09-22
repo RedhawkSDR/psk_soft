@@ -139,9 +139,9 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         
         #do the connections
         self.src.connect(self.comp)        
-        self.comp.connect(self.soft,usesPortName='dataFloat_out')
-        self.comp.connect(self.bits,usesPortName='dataShort_out')
-        self.comp.connect(self.phase,usesPortName='phase_out')
+        self.comp.connect(self.soft,usesPortName='softDecision_dataFloat_out')
+        self.comp.connect(self.bits,usesPortName='bits_dataShort_out')
+        self.comp.connect(self.phase,usesPortName='phase_dataFloat_out')
         
     def tearDown(self):
         """Finish the unit test - this is run after every method that starts with test

@@ -34,11 +34,11 @@ with this program.  If not, see http://www.gnu.org/licenses/.
         <description>Float input for complex baseband data to be demodulated. </description>
         <porttype type="data"/>
       </provides>
-      <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="dataFloat_out">
-        <description>Complex Soft-Desition output. </description>
+      <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="softDecision_dataFloat_out">
+        <description>Complex Soft-Decision output. </description>
         <porttype type="data"/>
       </uses>
-      <uses repid="IDL:BULKIO/dataShort:1.0" usesname="dataShort_out">
+      <uses repid="IDL:BULKIO/dataShort:1.0" usesname="bits_dataShort_out">
         <description>Short output for bits, zero or one. Differential Decoding can be turned on with a property setting.
 Symbol to Bit Mapping as follows:
 2 Symbols: 	Phase: 0 		Bit: 0
@@ -63,11 +63,11 @@ Symbol to Bit Mapping as follows:
 </description>
         <porttype type="data"/>
       </uses>
-      <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="phase_out">
-        <description>Float output containing phase estimate for debuggging. One phase estimate per symbol output. Phase is unwrapped.   
+      <uses repid="IDL:BULKIO/dataFloat:1.0" usesname="phase_dataFloat_out">
+        <description>Float output containing phase estimate for debugging. One phase estimate per symbol output. Phase is unwrapped.   
 </description>
       </uses>
-      <uses repid="IDL:BULKIO/dataShort:1.0" usesname="sampleIndex_out">
+      <uses repid="IDL:BULKIO/dataShort:1.0" usesname="sampleIndex_dataShort_out">
         <description>Index of sample used in timing recovery chosen for symbol output. Will range from 0 to samplesPerBaud-1.  </description>
       </uses>
     </ports>

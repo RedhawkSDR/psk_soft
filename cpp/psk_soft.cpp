@@ -383,11 +383,11 @@ int psk_soft_i::serviceFunction()
 			phaseEstimator.reset(NULL,&sampleRate);
 		}
 		tmp->SRI.xdelta*=samplesPerSymbol;
-		dataFloat_out->pushSRI(tmp->SRI);
+		softDecision_dataFloat_out->pushSRI(tmp->SRI);
 		tmp->SRI.mode=0;
-		phase_out->pushSRI(tmp->SRI);
+		phase_dataFloat_out->pushSRI(tmp->SRI);
 		tmp->SRI.xdelta/=bitsPerBaud;
-		dataShort_out->pushSRI(tmp->SRI);
+		bits_dataShort_out->pushSRI(tmp->SRI);
 	}
 
 	//user has changed our oversample factor - resize the symbolEnergy vector and re-populate it with the energy samples
@@ -591,14 +591,14 @@ int psk_soft_i::serviceFunction()
 	if (!out.empty())
 	{
 		std::vector<float>* output = (std::vector<float>*)&out;
-		dataFloat_out->pushPacket(*output, tmp->T, tmp->EOS, tmp->streamID);
+		softDecision_dataFloat_out->pushPacket(*output, tmp->T, tmp->EOS, tmp->streamID);
 	}
 	if (!bits.empty())
-		dataShort_out->pushPacket(bits, tmp->T, tmp->EOS, tmp->streamID);
+		bits_dataShort_out->pushPacket(bits, tmp->T, tmp->EOS, tmp->streamID);
 	if (!phase_vec.empty())
-		phase_out->pushPacket(phase_vec, tmp->T, tmp->EOS, tmp->streamID);
+		phase_dataFloat_out->pushPacket(phase_vec, tmp->T, tmp->EOS, tmp->streamID);
 	if (!sampleIndexOut.empty())
-		sampleIndex_out->pushPacket(sampleIndexOut, tmp->T, tmp->EOS, tmp->streamID);
+		sampleIndex_dataShort_out->pushPacket(sampleIndexOut, tmp->T, tmp->EOS, tmp->streamID);
 	delete tmp; // IMPORTANT: MUST RELEASE THE RECEIVED DATA BLOCK
 	return NORMAL;
 }
