@@ -61,7 +61,6 @@ def diffDecode(data):
     out=[]
     for v in data[1:]:
         d = abs(last - v)
-        #print last, v, d
         out.append(d)
         last = v
     return out
@@ -156,277 +155,87 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         self.comp.releaseObject()
         ossie.utils.testing.ScaComponentTestCase.tearDown(self)
 
-    def testCase(self):
-        #f = file('./qpsk.dat','r')
-        #f = file('./out2','r')
-        #try:
-        #    s = f.read()
-        #except:
-        #    print "cannot read test file"
-        #    return
-        #data = list(struct.unpack('%sf' %(len(s)/4),s))
+   
 
-        h, d = bluefile.read('./TFDoutput.tmp')
-        data=[]
-        for v in d:
-            data.append(float(v.real))
-            data.append(float(v.imag))
+    def testDiffDecodeBPSK(self):
+        self.DiffDecodeTest(2)
 
-        print "got %s data samples" %len(data)
-
-        self.comp.samplesPerBaud=8
-        self.comp.constelationSize=2
-        print self.comp.samplesPerBaud   
-        self.comp.numAvg=100   
-        out = self.main(data,100)[0]
-        print len(out)
-         
-        #if DISPLAY:
-        #     matplotlib.pyplot.plot(out[::2], out[1::2],'o')
-        #     matplotlib.pyplot.show()
+    def testDiffDecodeQPSK(self):
+        self.DiffDecodeTest(4)
         
-        if out:
-            startSample=0
-            endSample=20
-            resampleFactor=1
-            startIndex=0
-            finalIndex=2000
-            x = out[2*startIndex:finalIndex:resampleFactor*2]
-            y = out[2*startIndex+1:finalIndex:resampleFactor*2]
-            cx = [complex(i,j) for i,j in zip(x,y)]
-            
-            if DISPLAY:
-                matplotlib.pyplot.plot(x, y,'o')
-                matplotlib.pyplot.show()
+    def testDiffDecode8PSK(self):
+        self.DiffDecodeTest(8)
 
+    def testNonDiffDecodeBPSK(self):
+        self.NonDiffDecodeTest(2)
 
-#        for startIndex in xrange(10):
-        if False:
-            startIndex=5
-            print startIndex
-            resampleFactor = 8
-            finalIndex = 251*resampleFactor
-            x = data[2*startIndex:finalIndex:resampleFactor*2]
-            y = data[2*startIndex+1:finalIndex:resampleFactor*2]
-            #print x
-            #print y
-            #print data[:10]
-            if DISPLAY:
-                matplotlib.pyplot.plot(x,y,'o')
-                matplotlib.pyplot.show()
-                #matplotlib.pyplot.plot(xrange(len(x)),x,'o')
-                #matplotlib.pyplot.show()
-
-    def testDiffDecode(self):
-        data, syms = genPsk(1000, sampPerBaud=8,numSyms=4,differential=True)
+    def testNonDiffDecodeQPSK(self):
+        self.NonDiffDecodeTest(4)
         
-        print len(data), len(syms)
+    def testNonDiffDecode8PSK(self):
+        self.NonDiffDecodeTest(8)
+
+    def DiffDecodeTest(self,numSyms):
+        data, syms = genPsk(1000, sampPerBaud=8,numSyms=numSyms,differential=True)
+        
         dataReal=[]
         
-        #need to rotate my generated qpsk symbols from being at 0,pi/2,pi, and 3pi/2 to +/-1,+/-j
-        theta = math.pi/4
-        cxScaler= complex(math.cos(theta), math.sin(theta))
-        symsRotated = [cxScaler*x for x in syms]
+        #need to rotate my generated QPSK symbols from being at 0,pi/2,pi, and 3pi/2 to +/-1,+/-j
+        if numSyms==4:
+            theta = math.pi/4
+            cxScaler= complex(math.cos(theta), math.sin(theta))
+            symsRotated = [cxScaler*x for x in syms]
+        else:
+            symsRotated = syms
         
         self.comp.samplesPerBaud=8
-        self.comp.constelationSize=4
+        self.comp.constelationSize=numSyms
         self.comp.numAvg=100
         self.comp.differentialDecoding=True
         dataReal = toReal(data)
         out, bits, phase = self.main(dataReal,100)
         outCx = toCx(out)
-        print len(out), len(bits), len(phase)
         
         #don't include the first output as it is relative to an arbitrary reference
         #with the differential decoding when measuring the max error
+        
         maxError = max([abs(x-y) for x, y in zip(outCx[1:],symsRotated[1:])])
         print "found max error of %s" %maxError
         assert(maxError < 1e-3)
 
-    def testDiffDecode2(self):
-#         data, syms = genPsk(1000, sampPerBaud=8,numSyms=2,differential=False)
-#         dataReal = toReal(data)
-#           
-#         dataStr = struct.pack('%sf' %len(dataReal),*dataReal)
-#         myFile = file('test_data','w')
-#         myFile.write(dataStr)
-#         myFile.close()
-#            
-#         symsReal = [x.real for x in syms]
-#            
-#         dataStr = struct.pack('%sf' %len(symsReal),*symsReal)
-#         myFile = file('test_syms','w')
-#         myFile.write(dataStr)
-#         myFile.close()
-        
-        f = file('test_data','r')
-        s = f.read()
-        dataReal = list(struct.unpack('%sf' %(len(s)/4),s))
-  
-        f = file('test_syms','r')
-        s = f.read()
-        symsReal = list(struct.unpack('%sf' %(len(s)/4),s))
-         
-        f = file('test_bits','r')
-        s = f.read()
-        myDiffDecoded = list(struct.unpack('%sh' %(len(s)/2),s))
-        
-        
-        #print len(data), len(syms)
-        self.comp.samplesPerBaud=8
-        self.comp.constelationSize=2
-        self.comp.numAvg=100
-        self.comp.differentialDecoding=True
-        
-        out, bits, phase = self.main(dataReal,100)
-        outCx = toCx(out)
-        #print len(out), len(bits), len(phase), len(syms)
-        
-        dataStr = struct.pack('%sh' %len(bits),*bits)
-        myFile = file('test_bits_dc','w')
-        myFile.write(dataStr)
-        myFile.close()
-        
-        
-        symsRealBits = [(x+1)/2.0 for x in symsReal]
-        #symsRealBits = [abs((x-1)/2.0) for x in symsReal]
-        
-        bits = diffDecode(bits)
-        #print bits[:10]
-        
-#         #delay = getDelay(bits, myDiffDecoded)
-#         delay = -1
-#         print "delay = ",  delay
-#         
-#         if delay >=0:
-#             bitsDel = bits[delay:]
-#             myDiffDel = myDiffDecoded
-#         else:
-#             bitsDel = bits
-#             myDiffDel = myDiffDecoded[abs(delay):]
-#         
-#         print bitsDel[:10]
-#         print myDiffDel[:10]
-#             
-#         d = [abs(x-y) for x,y in zip(bitsDel, myDiffDel)]
-#         print "BER = ",  sum(d)/len(d)
-#         
-#         matplotlib.pyplot.plot(range(len(d)), d)
-#         matplotlib.pyplot.show()
-        
-        
-        #don't include the first output as it is relative to an arbitrary reference
-        #with the differential decoding when measuring the max error
-        #print [x-y for x,y in zip(bits,syms[1:])]
-        #print "found max error of %s" %maxError
-        #assert(maxError < 1e-3)
+    def NonDiffDecodeTest(self,numSyms):
+        data, syms = genPsk(1000, sampPerBaud=8,numSyms=numSyms,differential=False)
 
-
-    def testRegular(self):
-        data, syms = genPsk(1000, sampPerBaud=8,numSyms=4,differential=False)
-        
-        print len(data), len(syms)
         dataReal=[]
         
         self.comp.samplesPerBaud=8
-        self.comp.constelationSize=4
+        self.comp.constelationSize=numSyms
         self.comp.numAvg=100
         self.comp.differentialDecoding=False
         dataReal = toReal(data)
         out, bits, phase = self.main(dataReal,100)
         outCx = toCx(out)
-        print len(out), len(bits), len(phase)
         maxError = 1e99
-        #there is an arbitrary phase offset for non-differentailly decoded data
-        #so we will check 4 different rotations to find which one is "correct" and use the 
-        #errror associated with it to ensure that the demod got the right symbols out
-        #we use pi/4 +n*pi/2 because the generator has points at +/1,0, etc but the output points are at
-        #(+/1,+/-1)
-        for theta in [math.pi/4, 3*math.pi/4, 5*math.pi/4, 7*math.pi/4]:
+        
+        #there is an arbitrary phase offset for non-differentially decoded data
+        #so we will check  different rotations to find which one is "correct" and use the 
+        #error associated with it to ensure that the demod got the right symbols out
+        if numSyms ==2:
+            thetas = [0, math.pi]
+        if numSyms ==4:
+            thetas = [math.pi/4, 3*math.pi/4, 5*math.pi/4, 7*math.pi/4]
+        if numSyms ==8:
+            thetas = [0, math.pi/4, math.pi/2,3*math.pi/4,math.pi, 5*math.pi/4,3*math.pi/2, 7*math.pi/4]
+
+        for theta in thetas:
             #don't include the first output as it is relative to an arbitrary reference
             #with the differential decoding
             cxScaler= complex(math.cos(theta), math.sin(theta))
-            print cxScaler
             outCxRotated = [cxScaler*x for x in outCx]
             maxError = min(maxError, max([abs(x-y) for x, y in zip(outCxRotated[1:],syms[1:])]))
-            print "found max error of %s" %maxError
+            
+        print "found max error of %s" %maxError
         assert(maxError < 1e-3)        
-
-    def test2Case(self):
-        #f = file('./qpsk.dat','r')
-        f = file('./psk8.dat','r')
-        try:
-            s = f.read(100000)
-        except:
-            print "cannot read test file"
-            return
-        data = list(struct.unpack('%sf' %(len(s)/4),s))
-
-        print "got %s data samples" %len(data)
-        
-        theta = .002
-        #introduce a small frequency offset
-        cxData = toCx(data)
-        shiftedData = [x*cmath.rect(1,i*theta) for x, i in zip(cxData,xrange(len(cxData)))]
-        data  = []
-        for x in shiftedData:
-            data.append(x.real)
-            data.append(x.imag)
-
-        self.comp.samplesPerBaud=8
-        self.comp.constelationSize=8
-        self.comp.phaseAvg = 70
-        print self.comp.samplesPerBaud, self.comp.samplesPerBaud   
-        self.comp.numAvg=100   
-        out, bits, phase = self.main(data,100)
-        print "out = ", len(out)
-        if out:
-            toClipboard(bits)
-            print len(out), len(bits)
-             
-            #if DISPLAY:
-            #    matplotlib.pyplot.plot(out[::2], out[1::2],'o')
-            #    matplotlib.pyplot.show()
-            
-            startSample=0
-            endSample=20
-            resampleFactor=1
-            startIndex=0
-            finalIndex=2000
-            x = out[2*startIndex:finalIndex:resampleFactor*2]
-            y = out[2*startIndex+1:finalIndex:resampleFactor*2]
-            cx = [complex(i,j) for i,j in zip(x,y)]
-            
-            if DISPLAY:
-                matplotlib.pyplot.plot(x, y,'o')
-                matplotlib.pyplot.show()
-            power = [pow(z,8) for z in cx]
-            
-            if DISPLAY:
-                matplotlib.pyplot.plot(range(len(phase)), phase)
-                matplotlib.pyplot.show()
-                
-                matplotlib.pyplot.plot(range(len(power)),[cmath.phase(z) for z in power] ,'o')
-                matplotlib.pyplot.show()
-            avgPhase = sum([cmath.phase(z) for z in power])/len(power)
-
-
-#        for startIndex in xrange(10):
-        if False:
-            startIndex=5
-            print startIndex
-            resampleFactor = 8
-            finalIndex = 251*resampleFactor
-            x = data[2*startIndex:finalIndex:resampleFactor*2]
-            y = data[2*startIndex+1:finalIndex:resampleFactor*2]
-            #print x
-            #print y
-            #print data[:10]
-            matplotlib.pyplot.plot(x,y,'o')
-            matplotlib.pyplot.show()
-            #matplotlib.pyplot.plot(xrange(len(x)),x,'o')
-            #matplotlib.pyplot.show()
-
 
 
     def main(self,inData, sampleRate, complexData = True):
@@ -498,13 +307,6 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             self.assertEqual(port_obj._non_existent(), False)
             self.assertEqual(port_obj._is_a(port.get_repid()),  True)
             
-        
-    # TODO Add additional tests here
-    #
-    # See:
-    #   ossie.utils.bulkio.bulkio_helpers,
-    #   ossie.utils.bluefile.bluefile_helpers
-    # for modules that will assist with testing components with BULKIO ports
     
 if __name__ == "__main__":
     ossie.utils.testing.main("../psk_soft.spd.xml") # By default tests all implementations
