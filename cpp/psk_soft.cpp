@@ -344,7 +344,7 @@ int psk_soft_i::serviceFunction()
 
 	if (tmp->SRI.mode!=1)
 	{
-		std::cout<<"CANNOT work with real data"<<std::endl;
+		LOG_WARN(psk_soft_i,"CANNOT work with real data")
 		return NORMAL;
 	}
 
@@ -549,7 +549,7 @@ int psk_soft_i::serviceFunction()
 					}
 				}
 				else
-					std::cout<<"numSyms "<<numSyms<< " not supported - no bits out"<<std::endl;
+					LOG_WARN(psk_soft_i,"numSyms " <<numSyms << " not supported - no bits out")
 
 				if (samplesPerSymbol>1)
 				{
@@ -622,16 +622,16 @@ void psk_soft_i::resyncEnergy(const size_t& samplesPerSymbol, const size_t& numD
 }
 
 void psk_soft_i::samplesPerBaudChanged(const std::string& id){
-   std::cout << "samplesPerBaudChanged " << samplesPerBaud<< std::endl;
+   LOG_DEBUG(psk_soft_i,"samplesPerBaudChanged " << samplesPerBaud)
    resetSamplesPerBaud=(samplesPerBaud!=symbolEnergy.size());
 }
 
 void psk_soft_i::constelationSizeChanged(const std::string& id){
-   std::cout << "numSymbolsChanged " << samplesPerBaud<< std::endl;
+   LOG_DEBUG(psk_soft_i,"numSymbolsChanged "<<  samplesPerBaud)
    resetNumSymbols=true;
 }
 
 void psk_soft_i::phaseAvgChanged(const std::string& id){
-   std::cout << "phaseAvgChanged " << phaseAvg<< std::endl;
+   LOG_DEBUG(psk_soft_i,"phaseAvgChanged " << phaseAvg)
    resetPhaseAvg=true;
 }
