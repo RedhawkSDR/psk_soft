@@ -33,52 +33,55 @@
 PREPARE_LOGGING(psk_soft_i)
 
 LinearFit::LinearFit (size_t numPts, float sampleRate):
-	ySum(0),
-	xySum(0),
+	m(0.0),
+	b(0.0),
+	ySum(0.0),
+	xySum(0.0),
 	n(numPts),
 	xdelta(1.0/sampleRate),
+	denominator(1.0),
+	xAvg(0.0),
 	count(0)
 {
 }
 
 float LinearFit::next(float yval)
 {
-	//try to cope with systematic floating point math errors
+	//Try to cope with systematic floating point math errors.
 	if (count==1048576)
 		reset();
-	//are we currently in steady state
+	//Are we currently in steady state?
 	bool steadyState =  yvals.size()==n;
 	if (steadyState)
 	{
-		//update our state given our x-axis shift and
-		//our loss of the last point
+		//Update our state given our x-axis shift and our loss of the last point.
 
-		// here is a bit of the magic for the xySum update equqtion:
+		// Here is a bit of the magic for the xySum update equation:
 		// xySum = sum(xi*yi) = y0*0+y1*xdelta + y2*2*xdelta + ... yn-1*(n-1)*xdelta
-		// for the next value for xySum - we time shift our xaxis (to keep the earliest point at time 0)
-		// xySumNext = y1*0 + y2*xdelta +y3*2*xdelta + ... yn-1*(n-2)*xdelta + newYval*(n-1)*xdelta
+		// For the next value for xySum, we time shift our x-axis (to keep the earliest point at time 0).
+		// xySumNext = y1*0 + y2*xdelta + y3*2*xdelta + ... yn-1*(n-2)*xdelta + newYval*(n-1)*xdelta
 		// xySumNext - xySum = -xdelta*(y1+y2+...yn-1) + newYval*(n-1)*xdelta
 		// but ySumNext = ySum-y0 = y1+y2+...yn-1
 		// xySumNext - xySum = -xdelta*ySumNext + newYval*(n-1)*xdelta
-		// and the final update equation becomes xySum = -xdelta*newYSum+newYval*(n-1)*xdelta
+		// and the final update equation becomes xySum = -xdelta*newYSum+newYval*(n-1)*xdelta.
 
-		//we take care of the last term providing the new value update outside of the steady state check
+		//We take care of the last term providing the new value update outside of the steady state check.
 
 		ySum-=yvals.front();
 		yvals.pop_front();
 		xySum-=xdelta*ySum;
 	}
-	//update our state for our new point according to the update equations
+	//Update our state for our new point according to the update equations.
 	ySum+=yval;
-	//this is actually multiplying by yval*(n-1)*xdelta
-	//because we haven't yet pushed_back the new value.  This is intentional
+	//This is actually multiplying by yval*(n-1)*xdelta.
+	//because we haven't yet pushed_back the new value.  This is intentional.
 	xySum+=yval*yvals.size()*xdelta;
 	yvals.push_back(yval);
 
 	if (! steadyState)
-		//if the size of our data vector has changed we need to recalculate the denominator
+		//If the size of our data vector has changed we need to recalculate the denominator.
 		calculateDenominator();
-	//calculate the best fit given our state
+	//Calculate the best fit given our state.
 	count++;
 	return calculateFit();
 }
@@ -87,7 +90,7 @@ float LinearFit::reset(size_t* numPts, float* sampleRate, bool forceHistoryClear
 {
 	if (sampleRate!=NULL)
 	{
-		//can't use history once we reset the sample rate
+		//Can't use history once we reset the sample rate.
 		float newXdelta = 1.0/(*sampleRate);
 		if (xdelta!=newXdelta)
 		{
@@ -104,11 +107,11 @@ float LinearFit::reset(size_t* numPts, float* sampleRate, bool forceHistoryClear
 		while (yvals.size() >n)
 			yvals.pop_front();
 	}
-	//now update our internal state given our history and sample rate
+	//Now update our internal state given our history and sample rate.
 	unsigned int j=0;
 	ySum=0;
 	xySum=0;
-	//recalculate or yVal state directly from the yvals deque
+	//Recalculate yVal state directly from the yvals deque.
 	for (std::deque<float>::iterator i =yvals.begin(); i!=yvals.end(); i++, j++)
 	{
 		ySum+=*i;
@@ -139,12 +142,12 @@ float LinearFit::calculateFit()
 	// m = numerator / denominator
 	// b = sum(y)/n - m sum(x) / n
 
-	// we simplify this equation for regularly sampled data: xi = i*xdelta
+	// We simplify this equation for regularly sampled data: xi = i*xdelta
 	// (xvals = 0, xdelta, 2*xdelta, ... (n-1)*xdelta)
 
 	// Thus - the numerator reduces to the following equation:
 	// numerator  = sum(xi*yi) -xdelta*(n-1)/2*sum(yi);
-	// the denominator simplifies to a constant for a given xdelta and n:
+	// The denominator simplifies to a constant for a given xdelta and n:
 	// denominator =xdelta^2*((n-1)^3/3 + (n-1)^2/2 +(n-1)/6 - 1/4*(n-1)^2*n))
 
 	size_t pts = yvals.size();
@@ -154,7 +157,7 @@ float LinearFit::calculateFit()
 		m = (xySum-xdelta*pts_m_1/2*ySum)/denominator;
 		b = ySum/pts-m*xAvg;
 
-		//calculate the best fit point for our new data point
+		//Calculate the best fit point for our new data point.
 		float xVal = xdelta*pts_m_1;
 		return m*xVal + b;
 	}
@@ -172,7 +175,7 @@ float LinearFit::calculateFit()
 
 void LinearFit::calculateDenominator()
 {
-	//update the denominator for the current sample rate and number of points we are fitting
+	//Update the denominator for the current sample rate and number of points we are fitting.
 	size_t pts = yvals.size();
 	if (pts<=1)
 		return;
@@ -189,7 +192,7 @@ psk_soft_i::psk_soft_i(const char *uuid, const char *label) :
     resetNumSymbols(false),
     resetPhaseAvg(false),
     phaseEstimate(0.0),
-    sampleRate(1.0), //put in an initial sample rate we will update it later
+    sampleRate(1.0), //Put in an initial sample rate that will get updated later.
     count(0),
     phaseEstimator(phaseAvg,sampleRate)
 {
@@ -341,6 +344,11 @@ int psk_soft_i::serviceFunction()
 	if (not tmp) { // No data is available
 		return NOOP;
 	}
+    if (tmp->inputQueueFlushed)
+    {
+        LOG_WARN(psk_soft_i, "input queue flushed - data has been thrown on the floor.  flushing internal buffers");
+        resetState = true;
+    }
 
 	if (tmp->SRI.mode!=1)
 	{
@@ -357,12 +365,12 @@ int psk_soft_i::serviceFunction()
 		resetState = false;
 	}
 
-	//store off local values in case user configures properties during our processing loop
+	//Store local values in case user configures properties during the processing loop.
 
 	const size_t samplesPerSymbol = samplesPerBaud;
 	const size_t numDataPts = samplesPerSymbol*numAvg;
 	const size_t numSyms = constelationSize;
-	//this should only happen if numAvg or samplesPerBaud has shrunk
+	//This should only happen if numAvg or samplesPerBaud has shrunk.
 	if (numDataPts > samples.size())
 	{
 		resetSamplesPerBaud = true;
@@ -375,7 +383,7 @@ int psk_soft_i::serviceFunction()
 	else if (numSyms==8)
 		bitsPerBaud=3;
 
-	// NOTE: You must make at least one valid pushSRI call
+	// NOTE: You must make at least one valid pushSRI call prior to pushing data.
 	if (tmp->sriChanged || resetNumSymbols|| resetSamplesPerBaud) {
 		if (tmp->SRI.xdelta != sampleRate)
 		{
@@ -390,15 +398,15 @@ int psk_soft_i::serviceFunction()
 		bits_dataShort_out->pushSRI(tmp->SRI);
 	}
 
-	//user has changed our oversample factor - resize the symbolEnergy vector and re-populate it with the energy samples
+	//User has changed the oversample factor - resize the symbolEnergy vector and re-populate it with the energy samples.
 	if (resetSamplesPerBaud)
 	{
 		resyncEnergy(samplesPerSymbol, numDataPts);
 		resetSamplesPerBaud=false;
 	}
 
-	//all our phase calculations are invalid if we change our constellation size
-	//just clear the phaseSum and the phaseVec and start with new estimates
+	//All the phase calculations are invalid if the constellation size changes.
+	//Clear the phaseSum and the phaseVec and start with new estimates.
 	if (resetNumSymbols)
 	{
 		phaseEstimator.reset(NULL,NULL,true);
@@ -416,7 +424,7 @@ int psk_soft_i::serviceFunction()
 	std::vector<std::complex<float> > out;
 	std::vector<short> bits;
 	std::vector<float> phase_vec;
-	//reserve data for the output
+	//Reserve data for the output.
 	out.reserve((dataVec->size()+index)/samplesPerSymbol);
 	phase_vec.reserve(out.size());
 	bits.reserve(out.size()*bitsPerBaud);
@@ -427,43 +435,43 @@ int psk_soft_i::serviceFunction()
 	const size_t lastSample = samplesPerSymbol-1;
 	for (std::vector<std::complex<float> >::iterator i=dataVec->begin(); i!=dataVec->end(); i++)
 	{
-		//push back the sample and its energy
+		//Push back the sample and its energy.
 		if (samplesPerSymbol >1)
 		{
 			samples.push_back(*i);
 			double sampleEnergy = norm(*i);
 			energy.push_back(sampleEnergy);
-			//add energy to the symbolEnergy vector
+			//Add energy to the symbolEnergy vector.
 			symbolEnergy[index]+=sampleEnergy;
 		}
-		//when we reach the end of the next symbol
+		//When the end of the next symbol is reached...
 		if (index== lastSample)
 		{
-			//if we have enough samples to get meaningful averages we start outputting data
+			//If there are enough samples to get meaningful averages, start outputting data.
 			if (samples.size()==numDataPts)
 			{
 				if (samplesPerSymbol>1)
 				{
-					//get the index from the end for the max symbolEnergy
+					//Get the index from the end for the max symbolEnergy.
 					size_t sampleIndex = std::distance(symbolEnergy.begin(), std::max_element(symbolEnergy.begin(),symbolEnergy.end()));
 
-					//this is the sample we need to output
+					//This is the sample that is output.
 					sample= *(samples.begin()+sampleIndex);
 					sampleIndexOut.push_back(sampleIndex);
 				}
 				else
 					sample = *i;
 
-				//algorithm to compensate for phase offset
-				//note this isn't needed for differential decoding
-				//but since we have phase as a debug float out we do the calculations regardless
+				//Algorithm to compensate for phase offset.
+				//Note this isn't needed for differential decoding,
+				//but since phase is a debug float out, we do the calculations regardless.
 				double thisPhase = arg(pow(sample,numSyms));
 
-				//do phase unwrapping here with previous phase estimates
+				//Do phase unwrapping here with previous phase estimates.
 				long numWraps = round((phaseEstimate-thisPhase)/M_2PI);
 				thisPhase += +numWraps*M_2PI;
 
-				//compute the average phase
+				//Compute the average phase.
 				phaseEstimate = phaseEstimator.next(thisPhase);
 				phase_vec.push_back(phaseEstimate);
 
@@ -479,7 +487,7 @@ int psk_soft_i::serviceFunction()
 				{
 					phaseCorrection = -phaseEstimate/numSyms;
 				}
-				//compute the phase offset - we add PI/4 so that we get samples at (+/- 1, +/-j) instead of 0,1,-1,,-j
+				//Compute the phase offset - add PI/4 so that samples are at (+/- 1, +/-j) instead of 0,1,-1,,-j.
 				if (numSyms==4)
 					phaseCorrection+=M_PI_4;
 				std::complex<float> phaseCorrectionPhasor= std::polar(float(1.0),phaseCorrection);
@@ -522,26 +530,26 @@ int psk_soft_i::serviceFunction()
 					//             F    |    H
                     //                  G
 
-					//TIME to map the 8 psk constelation into bits
-					//this was harder then it should have been
+					//Time to map the 8 psk constellation into bits.
 
-					// we have clusters around theta 0, pi/4, pi/2, 3pi/4, pi, 5pi/4, 3pi/2, 7pi/8
-					// however, arg returns a number between -pi and pi.  Those phases near -pi AND near pi map to the same cluster
+					//There are clusters around theta 0, pi/4, pi/2, 3pi/4, pi, 5pi/4, 3pi/2, 7pi/8
+					//however, arg returns a number between -pi and pi.  Phases near -pi and near pi map to the same cluster.
 
-					//this is what we do to provide some rudimentary mapping
+					//This is what provides some rudimentary mapping.
 
-					//get the phase -pi<theta<pi
+					//Get the phase -pi<theta<pi.
 					float theta = arg(out.back());
-					//convert the phase to soft symbols -4 <=softsym < 4
+					//Convert the phase to soft symbols -4 <=softsym < 4.
 					float softsym = theta/M_PI*4;
-					//now wrap the negative numbers over to positive numbers -.5<=softsym<7.5
+					//Now wrap the negative numbers over to positive numbers -.5<=softsym<7.5.
 					if (softsym <-.5)
 						softsym +=8;
-					//now round to the closest integer
-					//This gives symbols between 0 <=sym<= 7
+					//Now round to the closest integer.
+					//This gives symbols between 0 <=sym<= 7.
 					unsigned short sym = round(softsym);
-					//now unpack the bits
-					// the trick is that both 0 and 8 have the same values for 3 least significant bits (0,0,0) - so they will produce the same bits;
+					//Now unpack the bits.
+					//The trick is that both 0 and 8 have the same values for 3 least significant bits (0,0,0),
+					//so they will produce the same bits.
 					for (size_t j=0; j!=3; j++)
 					{
 						bits.push_back(sym&1);
@@ -554,14 +562,14 @@ int psk_soft_i::serviceFunction()
 				if (samplesPerSymbol>1)
 				{
 
-					//subtract the energy for this symbol from the symbolEnergy vector
+					//Subtract the energy for this symbol from the symbolEnergy vector.
 					std::vector<double>::iterator symIter = symbolEnergy.begin();
 					std::deque<double>::iterator energyIterEnd = energy.begin()+samplesPerSymbol;
 					for (std::deque<double>::iterator energyIter = energy.begin(); energyIter !=energyIterEnd;energyIter++, symIter++)
 					{
 						*symIter-=*energyIter;
 					}
-					//remove all samples from this symbol from the samples & energy containers
+					//Remove all samples from this symbol from the samples & energy containers.
 					energy.erase(energy.begin(), energyIterEnd);
 					samples.erase(samples.begin(), samples.begin()+samplesPerSymbol);
 					count++;
@@ -569,21 +577,21 @@ int psk_soft_i::serviceFunction()
 						resyncEnergy(samplesPerSymbol, numDataPts);
 				}
 			}
-			//reset our symbolIndex back to 0
+			//Reset the symbolIndex back to 0
 			index=0;
 		}
 		else
 			index++;
 	}
-	//wrap phase estimate back to a reasonable value to keep it from going to infinite
-	//we wrap about numSyms*2pi and NOT 2PI or we introduce phase offsets
-	//since phaseEstimate is the estimate of the numSyms power of the phase
+	//Wrap phase estimate back to a reasonable value to keep it from going to infinity.
+	//Wrap about numSyms*2pi and NOT 2PI or phase offsets are introduced,
+	//since phaseEstimate is the estimate of the numSyms power of the phase.
 	float wrapValue = M_2PI*numSyms;
 	if (abs(phaseEstimate)> wrapValue)
 	{
 		long numWraps = round(phaseEstimate/wrapValue);
-		//we subtract the phaseOffset from the estimator.  This takes care of doing it for all the history
-		//and reseting the state
+		//Subtract the phaseOffset from the estimator.  This takes care of doing it for all the history.
+		//and reseting the state.
 		float newPhaseEstimate = phaseEstimator.subtractConst(numWraps*wrapValue);
 		phaseEstimate = newPhaseEstimate;
 	}

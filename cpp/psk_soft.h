@@ -25,26 +25,24 @@
 class psk_soft_i;
 
 
+/* Class for calculating a linear fit for uniformly sampled data.
+ * To use this class do the following:
+ * 1. Specify the number of points to use in the fit (the history) and sample rate of the data.
+ * 2. Pass in one data point at a time. The point which is the linear best fit given the current history is returned.
+ */
 class LinearFit
 {
-// class for calculating a linear fit for uniformly sampled data
-// to use this class do the following:
-// you tell it the number of points to use in your fit (the history) and sample rate of the data
-//
-// you then pass in one data point at a time and it returns the point which is the linear best fit given our current history
 public:
 	LinearFit(size_t numPts, float sampleRate);
 	float next(float yval);
 	float reset(size_t* numPts=NULL, float* sampleRate=NULL, bool forceHistoryClear=false);
 	float subtractConst(float yval);
 private:
-	//here are the two equations which do the best fit
 	float calculateFit();
 	void calculateDenominator();
 	std::deque<float> yvals;
 	float m;
 	float b;
-
 	double ySum;
 	double xySum;
 	size_t n;
