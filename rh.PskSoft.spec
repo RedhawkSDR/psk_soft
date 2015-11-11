@@ -2,14 +2,14 @@
 # This file is protected by Copyright. Please refer to the COPYRIGHT file
 # distributed with this source distribution.
 #
-# This file is part of REDHAWK psk_soft.
+# This file is part of REDHAWK PskSoft.
 #
-# REDHAWK psk_soft is free software: you can redistribute it and/or modify it under
+# REDHAWK PskSoft is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# REDHAWK psk_soft is distributed in the hope that it will be useful, but WITHOUT
+# REDHAWK PskSoft is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
 # details.
@@ -29,7 +29,7 @@ Prefix:         %{_prefix}
 %define _mandir        %{_prefix}/man
 %define _infodir       %{_prefix}/info
 
-Name:           rh.psk_soft
+Name:           rh.PskSoft
 Version:        2.0.0
 Release:        1%{?dist}
 Summary:        Component %{name}
@@ -48,7 +48,7 @@ BuildRequires:  bulkioInterfaces >= 2.0
 Requires:       bulkioInterfaces >= 2.0
 
 # Allow upgrades from previous package name
-Obsoletes:      psk_soft < 2.0.0
+Obsoletes:      PskSoft < 2.0.0
 
 
 
@@ -66,7 +66,7 @@ Component %{name}
 # Implementation cpp
 pushd cpp
 ./reconf
-%define _bindir %{_prefix}/dom/components/rh/psk_soft/cpp
+%define _bindir %{_prefix}/dom/components/rh/PskSoft/cpp
 %configure
 make %{?_smp_mflags}
 popd
@@ -76,7 +76,7 @@ popd
 rm -rf $RPM_BUILD_ROOT
 # Implementation cpp
 pushd cpp
-%define _bindir %{_prefix}/dom/components/rh/psk_soft/cpp
+%define _bindir %{_prefix}/dom/components/rh/PskSoft/cpp
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
@@ -87,9 +87,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,redhawk,redhawk,-)
-%dir %{_prefix}/dom/components/rh/psk_soft
-%{_prefix}/dom/components/rh/psk_soft/psk_soft.scd.xml
-%{_prefix}/dom/components/rh/psk_soft/psk_soft.prf.xml
-%{_prefix}/dom/components/rh/psk_soft/psk_soft.spd.xml
-%{_prefix}/dom/components/rh/psk_soft/cpp
+%dir %{_prefix}/dom/components/rh/PskSoft
+%{_prefix}/dom/components/rh/PskSoft/PskSoft.scd.xml
+%{_prefix}/dom/components/rh/PskSoft/PskSoft.prf.xml
+%{_prefix}/dom/components/rh/PskSoft/PskSoft.spd.xml
+%{_prefix}/dom/components/rh/PskSoft/cpp
 

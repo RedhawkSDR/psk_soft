@@ -2,14 +2,14 @@
  * This file is protected by Copyright. Please refer to the COPYRIGHT file
  * distributed with this source distribution.
  *
- * This file is part of REDHAWK psk_soft.
+ * This file is part of REDHAWK PskSoft.
  *
- * REDHAWK psk_soft is free software: you can redistribute it and/or modify it
+ * REDHAWK PskSoft is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or (at your
  * option) any later version.
  *
- * REDHAWK psk_soft is distributed in the hope that it will be useful, but WITHOUT
+ * REDHAWK PskSoft is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
  * for more details.
@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#include "psk_soft_base.h"
+#include "PskSoft_base.h"
 
 /*******************************************************************************************
 
@@ -29,7 +29,7 @@
 
 ******************************************************************************************/
 
-psk_soft_base::psk_soft_base(const char *uuid, const char *label) :
+PskSoft_base::PskSoft_base(const char *uuid, const char *label) :
     Component(uuid, label),
     ThreadedComponent()
 {
@@ -47,7 +47,7 @@ psk_soft_base::psk_soft_base(const char *uuid, const char *label) :
     addPort("sampleIndex_dataShort_out", "Index of sample used in timing recovery chosen for symbol output. Will range from 0 to samplesPerBaud-1.  ", sampleIndex_dataShort_out);
 }
 
-psk_soft_base::~psk_soft_base()
+PskSoft_base::~PskSoft_base()
 {
     delete dataFloat_in;
     dataFloat_in = 0;
@@ -65,13 +65,13 @@ psk_soft_base::~psk_soft_base()
     Framework-level functions
     These functions are generally called by the framework to perform housekeeping.
 *******************************************************************************************/
-void psk_soft_base::start() throw (CORBA::SystemException, CF::Resource::StartError)
+void PskSoft_base::start() throw (CORBA::SystemException, CF::Resource::StartError)
 {
     Component::start();
     ThreadedComponent::startThread();
 }
 
-void psk_soft_base::stop() throw (CORBA::SystemException, CF::Resource::StopError)
+void PskSoft_base::stop() throw (CORBA::SystemException, CF::Resource::StopError)
 {
     Component::stop();
     if (!ThreadedComponent::stopThread()) {
@@ -79,7 +79,7 @@ void psk_soft_base::stop() throw (CORBA::SystemException, CF::Resource::StopErro
     }
 }
 
-void psk_soft_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle::ReleaseError)
+void PskSoft_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle::ReleaseError)
 {
     // This function clears the component running condition so main shuts down everything
     try {
@@ -91,7 +91,7 @@ void psk_soft_base::releaseObject() throw (CORBA::SystemException, CF::LifeCycle
     Component::releaseObject();
 }
 
-void psk_soft_base::loadProperties()
+void PskSoft_base::loadProperties()
 {
     addProperty(samplesPerBaud,
                 10,

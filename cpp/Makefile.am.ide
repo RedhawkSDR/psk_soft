@@ -4,7 +4,7 @@
 # by opening the Properties dialog of your project and choosing C/C++ Build ->
 # Tool Chain Editor, and un-checking "Exclude resource from build "
 redhawk_SOURCES_auto = main.cpp
-redhawk_SOURCES_auto += psk_soft.cpp
-redhawk_SOURCES_auto += psk_soft.h
-redhawk_SOURCES_auto += psk_soft_base.cpp
-redhawk_SOURCES_auto += psk_soft_base.h
+redhawk_SOURCES_auto += PskSoft.cpp
+redhawk_SOURCES_auto += PskSoft.h
+redhawk_SOURCES_auto += PskSoft_base.cpp
+redhawk_SOURCES_auto += PskSoft_base.h

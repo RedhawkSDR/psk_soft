@@ -2,14 +2,14 @@
  * This file is protected by Copyright. Please refer to the COPYRIGHT file
  * distributed with this source distribution.
  *
- * This file is part of REDHAWK psk_soft.
+ * This file is part of REDHAWK PskSoft.
  *
- * REDHAWK psk_soft is free software: you can redistribute it and/or modify it
+ * REDHAWK PskSoft is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or (at your
  * option) any later version.
  *
- * REDHAWK psk_soft is distributed in the hope that it will be useful, but WITHOUT
+ * REDHAWK PskSoft is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
  * for more details.
@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#ifndef PSK_SOFT_BASE_IMPL_BASE_H
-#define PSK_SOFT_BASE_IMPL_BASE_H
+#ifndef PskSoft_BASE_IMPL_BASE_H
+#define PskSoft_BASE_IMPL_BASE_H
 
 #include <boost/thread.hpp>
 #include <ossie/Component.h>
@@ -26,11 +26,11 @@
 
 #include <bulkio/bulkio.h>
 
-class psk_soft_base : public Component, protected ThreadedComponent
+class PskSoft_base : public Component, protected ThreadedComponent
 {
     public:
-        psk_soft_base(const char *uuid, const char *label);
-        ~psk_soft_base();
+        PskSoft_base(const char *uuid, const char *label);
+        ~PskSoft_base();
 
         void start() throw (CF::Resource::StartError, CORBA::SystemException);
 
@@ -69,4 +69,4 @@ class psk_soft_base : public Component, protected ThreadedComponent
 
     private:
 };
-#endif // PSK_SOFT_BASE_IMPL_BASE_H
+#endif // PskSoft_BASE_IMPL_BASE_H

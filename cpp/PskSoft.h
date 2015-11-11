@@ -2,14 +2,14 @@
  * This file is protected by Copyright. Please refer to the COPYRIGHT file
  * distributed with this source distribution.
  *
- * This file is part of REDHAWK psk_soft.
+ * This file is part of REDHAWK PskSoft.
  *
- * REDHAWK psk_soft is free software: you can redistribute it and/or modify it
+ * REDHAWK PskSoft is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or (at your
  * option) any later version.
  *
- * REDHAWK psk_soft is distributed in the hope that it will be useful, but WITHOUT
+ * REDHAWK PskSoft is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
  * for more details.
@@ -17,13 +17,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#ifndef PSK_SOFT_IMPL_H
-#define PSK_SOFT_IMPL_H
+#ifndef PskSoft_IMPL_H
+#define PskSoft_IMPL_H
 
-#include "psk_soft_base.h"
-
-class psk_soft_i;
-
+#include "PskSoft_base.h"
 
 /* Class for calculating a linear fit for uniformly sampled data.
  * To use this class do the following:
@@ -53,12 +50,12 @@ private:
 };
 
 
-class psk_soft_i : public psk_soft_base
+class PskSoft_i : public PskSoft_base
 {
     ENABLE_LOGGING
     public:
-        psk_soft_i(const char *uuid, const char *label);
-        ~psk_soft_i();
+        PskSoft_i(const char *uuid, const char *label);
+        ~PskSoft_i();
         int serviceFunction();
     private:
         static const double M_2PI = 2*M_PI;
