@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#ifndef PskSoft_IMPL_H
-#define PskSoft_IMPL_H
+#ifndef PSK_SOFT_IMPL_H
+#define PSK_SOFT_IMPL_H
 
 #include "PskSoft_base.h"
 

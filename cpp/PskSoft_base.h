@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-#ifndef PskSoft_BASE_IMPL_BASE_H
-#define PskSoft_BASE_IMPL_BASE_H
+#ifndef PSK_SOFT_BASE_IMPL_BASE_H
+#define PSK_SOFT_BASE_IMPL_BASE_H
 
 #include <boost/thread.hpp>
 #include <ossie/Component.h>
@@ -69,4 +69,4 @@ class PskSoft_base : public Component, protected ThreadedComponent
 
     private:
 };
-#endif // PskSoft_BASE_IMPL_BASE_H
+#endif // PSK_SOFT_BASE_IMPL_BASE_H
