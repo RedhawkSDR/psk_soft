@@ -3,14 +3,14 @@
 # This file is protected by Copyright. Please refer to the COPYRIGHT file
 # distributed with this source distribution.
 #
-# This file is part of REDHAWK psk_soft.
+# This file is part of REDHAWK PskSoft.
 #
-# REDHAWK psk_soft is free software: you can redistribute it and/or modify it under
+# REDHAWK PskSoft is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# REDHAWK psk_soft is distributed in the hope that it will be useful, but WITHOUT
+# REDHAWK PskSoft is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
 # details.
@@ -21,12 +21,12 @@
 
 if [ "$1" = "rpm" ]; then
     # A very simplistic RPM build scenario
-    if [ -e rh.psk_soft.spec ]; then
+    if [ -e rh.PskSoft.spec ]; then
         mydir=`dirname $0`
         tmpdir=`mktemp -d`
-        cp -r ${mydir} ${tmpdir}/rh.psk_soft-2.0.0
-        tar czf ${tmpdir}/rh.psk_soft-2.0.0.tar.gz --exclude=".svn" -C ${tmpdir} rh.psk_soft-2.0.0
-        rpmbuild -ta ${tmpdir}/rh.psk_soft-2.0.0.tar.gz
+        cp -r ${mydir} ${tmpdir}/rh.PskSoft-2.0.0
+        tar czf ${tmpdir}/rh.PskSoft-2.0.0.tar.gz --exclude=".svn" -C ${tmpdir} rh.PskSoft-2.0.0
+        rpmbuild -ta ${tmpdir}/rh.PskSoft-2.0.0.tar.gz
         rm -rf $tmpdir
     else
         echo "Missing RPM spec file in" `pwd`

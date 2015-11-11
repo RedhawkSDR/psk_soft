@@ -2,14 +2,14 @@
  * This file is protected by Copyright. Please refer to the COPYRIGHT file
  * distributed with this source distribution.
  *
- * This file is part of REDHAWK psk_soft.
+ * This file is part of REDHAWK PskSoft.
  *
- * REDHAWK psk_soft is free software: you can redistribute it and/or modify it
+ * REDHAWK PskSoft is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or (at your
  * option) any later version.
  *
- * REDHAWK psk_soft is distributed in the hope that it will be useful, but WITHOUT
+ * REDHAWK PskSoft is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
  * for more details.
@@ -26,11 +26,11 @@
 
 **************************************************************************/
 
-#include "psk_soft.h"
+#include "PskSoft.h"
 #include "complex"
 #include <cmath>
 
-PREPARE_LOGGING(psk_soft_i)
+PREPARE_LOGGING(PskSoft_i)
 
 LinearFit::LinearFit (size_t numPts, float sampleRate):
 	m(0.0),
@@ -184,8 +184,8 @@ void LinearFit::calculateDenominator()
 	xAvg = xdelta*(pts_m_1)/2;
 }
 
-psk_soft_i::psk_soft_i(const char *uuid, const char *label) :
-    psk_soft_base(uuid, label),
+PskSoft_i::PskSoft_i(const char *uuid, const char *label) :
+    PskSoft_base(uuid, label),
     symbolEnergy(samplesPerBaud,0.0),
     index(0),
     resetSamplesPerBaud(false),
@@ -196,13 +196,13 @@ psk_soft_i::psk_soft_i(const char *uuid, const char *label) :
     count(0),
     phaseEstimator(phaseAvg,sampleRate)
 {
-	 setPropertyChangeListener("samplesPerBaud", this, &psk_soft_i::samplesPerBaudChanged);
-	 setPropertyChangeListener("constelationSize", this, &psk_soft_i::constelationSizeChanged);
-	 setPropertyChangeListener("phaseAvg", this, &psk_soft_i::phaseAvgChanged);
+	 setPropertyChangeListener("samplesPerBaud", this, &PskSoft_i::samplesPerBaudChanged);
+	 setPropertyChangeListener("constelationSize", this, &PskSoft_i::constelationSizeChanged);
+	 setPropertyChangeListener("phaseAvg", this, &PskSoft_i::phaseAvgChanged);
 
 }
 
-psk_soft_i::~psk_soft_i()
+PskSoft_i::~PskSoft_i()
 {
 }
 
@@ -293,7 +293,7 @@ psk_soft_i::~psk_soft_i()
         "prop_n", where "n" is the ordinal number of the property in the PRF file.
         Property types are mapped to the nearest C++ type, (e.g. "string" becomes
         "std::string"). All generated properties are declared in the base class
-        (psk_soft_base).
+        (PskSoft_base).
     
         Simple sequence properties are mapped to "std::vector" of the simple type.
         Struct properties, if used, are mapped to C++ structs defined in the
@@ -314,30 +314,30 @@ psk_soft_i::~psk_soft_i()
             
         A callback method can be associated with a property so that the method is
         called each time the property value changes.  This is done by calling 
-        setPropertyChangeListener(<property name>, this, &psk_soft_i::<callback method>)
+        setPropertyChangeListener(<property name>, this, &PskSoft_i::<callback method>)
         in the constructor.
             
         Example:
             // This example makes use of the following Properties:
             //  - A float value called scaleValue
             
-        //Add to psk_soft.cpp
-        psk_soft_i::psk_soft_i(const char *uuid, const char *label) :
-            psk_soft_base(uuid, label)
+        //Add to PskSoft.cpp
+        PskSoft_i::PskSoft_i(const char *uuid, const char *label) :
+            PskSoft_base(uuid, label)
         {
-            setPropertyChangeListener("scaleValue", this, &psk_soft_i::scaleChanged);
+            setPropertyChangeListener("scaleValue", this, &PskSoft_i::scaleChanged);
         }
 
-        void psk_soft_i::scaleChanged(const std::string& id){
+        void PskSoft_i::scaleChanged(const std::string& id){
             std::cout << "scaleChanged scaleValue " << scaleValue << std::endl;
         }
             
-        //Add to psk_soft.h
+        //Add to PskSoft.h
         void scaleChanged(const std::string&);
         
         
 ************************************************************************************************/
-int psk_soft_i::serviceFunction()
+int PskSoft_i::serviceFunction()
 {
 
 	bulkio::InFloatPort::dataTransfer *tmp = dataFloat_in->getPacket(bulkio::Const::BLOCKING);
@@ -346,19 +346,19 @@ int psk_soft_i::serviceFunction()
 	}
     if (tmp->inputQueueFlushed)
     {
-        LOG_WARN(psk_soft_i, "input queue flushed - data has been thrown on the floor.  flushing internal buffers");
+        LOG_WARN(PskSoft_i, "input queue flushed - data has been thrown on the floor.  flushing internal buffers");
         resetState = true;
     }
 
 	if (tmp->SRI.mode!=1)
 	{
-		LOG_WARN(psk_soft_i,"CANNOT work with real data")
+		LOG_WARN(PskSoft_i,"CANNOT work with real data")
 		return NORMAL;
 	}
 
 	if (resetState)
 	{
-		LOG_DEBUG(psk_soft_i, "psk_soft_i reset state");
+		LOG_DEBUG(PskSoft_i, "PskSoft_i reset state");
 		resetSamplesPerBaud=true;
 		resetNumSymbols=true;
 		resetPhaseAvg=true;
@@ -557,7 +557,7 @@ int psk_soft_i::serviceFunction()
 					}
 				}
 				else
-					LOG_WARN(psk_soft_i,"numSyms " <<numSyms << " not supported - no bits out")
+					LOG_WARN(PskSoft_i,"numSyms " <<numSyms << " not supported - no bits out")
 
 				if (samplesPerSymbol>1)
 				{
@@ -610,7 +610,7 @@ int psk_soft_i::serviceFunction()
 	delete tmp; // IMPORTANT: MUST RELEASE THE RECEIVED DATA BLOCK
 	return NORMAL;
 }
-void psk_soft_i::resyncEnergy(const size_t& samplesPerSymbol, const size_t& numDataPts)
+void PskSoft_i::resyncEnergy(const size_t& samplesPerSymbol, const size_t& numDataPts)
 {
 	symbolEnergy.assign(samplesPerSymbol,0.0);
 	if (samples.size()> numDataPts)
@@ -629,17 +629,17 @@ void psk_soft_i::resyncEnergy(const size_t& samplesPerSymbol, const size_t& numD
 	count=0;
 }
 
-void psk_soft_i::samplesPerBaudChanged(const std::string& id){
-   LOG_DEBUG(psk_soft_i,"samplesPerBaudChanged " << samplesPerBaud)
+void PskSoft_i::samplesPerBaudChanged(const std::string& id){
+   LOG_DEBUG(PskSoft_i,"samplesPerBaudChanged " << samplesPerBaud)
    resetSamplesPerBaud=(samplesPerBaud!=symbolEnergy.size());
 }
 
-void psk_soft_i::constelationSizeChanged(const std::string& id){
-   LOG_DEBUG(psk_soft_i,"numSymbolsChanged "<<  samplesPerBaud)
+void PskSoft_i::constelationSizeChanged(const std::string& id){
+   LOG_DEBUG(PskSoft_i,"numSymbolsChanged "<<  samplesPerBaud)
    resetNumSymbols=true;
 }
 
-void psk_soft_i::phaseAvgChanged(const std::string& id){
-   LOG_DEBUG(psk_soft_i,"phaseAvgChanged " << phaseAvg)
+void PskSoft_i::phaseAvgChanged(const std::string& id){
+   LOG_DEBUG(PskSoft_i,"phaseAvgChanged " << phaseAvg)
    resetPhaseAvg=true;
 }

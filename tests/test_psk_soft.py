@@ -3,14 +3,14 @@
 # This file is protected by Copyright. Please refer to the COPYRIGHT file
 # distributed with this source distribution.
 #
-# This file is part of REDHAWK psk_soft.
+# This file is part of REDHAWK PskSoft.
 #
-# REDHAWK psk_soft is free software: you can redistribute it and/or modify it under
+# REDHAWK PskSoft is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# REDHAWK psk_soft is distributed in the hope that it will be useful, but WITHOUT
+# REDHAWK PskSoft is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
 # details.
@@ -117,7 +117,7 @@ def genPsk(numSymbols, sampPerBaud=8,numSyms=4,differential=False):
     return out, inputSymbols
 
 class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
-    """Test for all component implementations in psk_soft"""
+    """Test for all component implementations in PskSoft"""
 
     def setUp(self):
         """Set up the unit test - this is run before every method that starts with test
@@ -309,4 +309,4 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             
     
 if __name__ == "__main__":
-    ossie.utils.testing.main("../psk_soft.spd.xml") # By default tests all implementations
+    ossie.utils.testing.main("../PskSoft.spd.xml") # By default tests all implementations

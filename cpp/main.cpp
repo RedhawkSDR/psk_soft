@@ -2,14 +2,14 @@
  * This file is protected by Copyright. Please refer to the COPYRIGHT file
  * distributed with this source distribution.
  *
- * This file is part of REDHAWK psk_soft.
+ * This file is part of REDHAWK PskSoft.
  *
- * REDHAWK psk_soft is free software: you can redistribute it and/or modify it
+ * REDHAWK PskSoft is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or (at your
  * option) any later version.
  *
- * REDHAWK psk_soft is distributed in the hope that it will be useful, but WITHOUT
+ * REDHAWK PskSoft is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
  * for more details.
@@ -20,11 +20,11 @@
 #include <iostream>
 #include "ossie/ossieSupport.h"
 
-#include "psk_soft.h"
+#include "PskSoft.h"
 int main(int argc, char* argv[])
 {
-    psk_soft_i* psk_soft_servant;
-    Component::start_component(psk_soft_servant, argc, argv);
+    PskSoft_i* PskSoft_servant;
+    Component::start_component(PskSoft_servant, argc, argv);
     return 0;
 }
 
