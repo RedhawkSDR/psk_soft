@@ -59,6 +59,7 @@ class psk_soft_i : public psk_soft_base
     public:
         psk_soft_i(const char *uuid, const char *label);
         ~psk_soft_i();
+        void constructor();
         int serviceFunction();
     private:
         static const double M_2PI = 2*M_PI;

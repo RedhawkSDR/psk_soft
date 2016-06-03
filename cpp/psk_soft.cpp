@@ -188,22 +188,28 @@ psk_soft_i::psk_soft_i(const char *uuid, const char *label) :
     psk_soft_base(uuid, label),
     symbolEnergy(samplesPerBaud,0.0),
     index(0),
-    resetSamplesPerBaud(false),
-    resetNumSymbols(false),
-    resetPhaseAvg(false),
+    resetSamplesPerBaud(true),
+    resetNumSymbols(true),
+    resetPhaseAvg(true),
     phaseEstimate(0.0),
     sampleRate(1.0), //Put in an initial sample rate that will get updated later.
     count(0),
     phaseEstimator(phaseAvg,sampleRate)
 {
-	 setPropertyChangeListener("samplesPerBaud", this, &psk_soft_i::samplesPerBaudChanged);
-	 setPropertyChangeListener("constelationSize", this, &psk_soft_i::constelationSizeChanged);
-	 setPropertyChangeListener("phaseAvg", this, &psk_soft_i::phaseAvgChanged);
-
 }
 
 psk_soft_i::~psk_soft_i()
 {
+}
+
+void psk_soft_i::constructor()
+{
+    /***********************************************************************************
+     This is the RH constructor. All properties are properly initialized before this function is called
+    ***********************************************************************************/
+    setPropertyChangeListener("samplesPerBaud", this, &psk_soft_i::samplesPerBaudChanged);
+    setPropertyChangeListener("constelationSize", this, &psk_soft_i::constelationSizeChanged);
+    setPropertyChangeListener("phaseAvg", this, &psk_soft_i::phaseAvgChanged);
 }
 
 /***********************************************************************************************
