@@ -19,12 +19,12 @@ details.
 You should have received a copy of the GNU Lesser General Public License along
 with this program.  If not, see http://www.gnu.org/licenses/.
 -->
-<softpkg id="DCE:c7ac38fa-16d3-11e5-bc9f-3417ebc4aab5" name="rh.psk_soft" type="2.0.0" version="2.0.1">
+<softpkg id="DCE:c7ac38fa-16d3-11e5-bc9f-3417ebc4aab5" name="rh.psk_soft" type="2.0.0" version="2.0.2">
   <title></title>
   <author>
     <name>null</name>
   </author>
-  <description>PSK Demodulator component. Takes complex baseband pre-da data and does a psk demodulation of either BPSK, QPSK, or 8-PSK and outputs symbols and bits. Input must be a integeter number of samples per symbol (recommended 8-10). 
+  <description>PSK Demodulator component. Takes complex baseband pre-da data and does a psk demodulation of either BPSK, QPSK, or 8-PSK and outputs symbols and bits. Input must be a integeter number of samples per symbol (recommended 8-10).
 
 </description>
   <propertyfile type="PRF">
